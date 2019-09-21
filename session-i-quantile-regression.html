@@ -114,8 +114,6 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="2.1" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#objective-1"><i class="fa fa-check"></i><b>2.1</b> Objective</a></li>
 <li class="chapter" data-level="2.2" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#quantile-regression"><i class="fa fa-check"></i><b>2.2</b> Quantile Regression</a><ul>
 <li class="chapter" data-level="2.2.1" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#geometric-interpretation"><i class="fa fa-check"></i><b>2.2.1</b> Geometric interpretation</a></li>
-<li class="chapter" data-level="2.2.2" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#estimation-of-the-quantiles"><i class="fa fa-check"></i><b>2.2.2</b> Estimation of the quantiles</a></li>
-<li class="chapter" data-level="2.2.3" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#estimation-of-the-quantile-regression"><i class="fa fa-check"></i><b>2.2.3</b> Estimation of the quantile regression</a></li>
 </ul></li>
 <li class="chapter" data-level="2.3" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#replication-of-a-paper-using-quantile-regression"><i class="fa fa-check"></i><b>2.3</b> Replication of a paper using quantile regression</a><ul>
 <li class="chapter" data-level="2.3.1" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#quantile-regression-visualization"><i class="fa fa-check"></i><b>2.3.1</b> Quantile Regression visualization</a></li>
@@ -197,37 +195,6 @@ dat &lt;-<span class="st"> </span><span class="kw">data.frame</span>(x,y)</code>
 <p><img src="Material_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 <p>We can interpret the causal relationship in quantile regression only under rank invariant condition. This requires that individuals have always the same ranking in the distribution of <span class="math inline">\(Y(X)\)</span> no matter the <span class="math inline">\(X\)</span>. This is difficult to verify or believe in actual applications, but feasible in theory.</p>
 <p>Under the rank invariant condition <span class="math inline">\(\beta_{\tau}\)</span> can be interpreted as the effect on <span class="math inline">\(Y\)</span> of an increase of one unit of <span class="math inline">\(X\)</span> among entities at rank <span class="math inline">\(\tau\)</span> in the distribution <span class="math inline">\(Y|X=x\)</span>.</p>
-</div>
-<div id="estimation-of-the-quantiles" class="section level3">
-<h3><span class="header-section-number">2.2.2</span> Estimation of the quantiles</h3>
-<p>In order to understand how the estimation procedure works first we are going to set up the most simple problem, we are going to solve to find the value for a specific quantile in a distribution.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">n =<span class="st"> </span><span class="dv">101</span>
-<span class="kw">set.seed</span>(<span class="dv">10</span>)
-y =<span class="st"> </span><span class="kw">rlnorm</span>(n)
-<span class="kw">quantile</span>(y, <span class="fl">0.3</span>)</code></pre></div>
-<pre><code>##       30% 
-## 0.5092247</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lpSolve)</code></pre></div>
-<pre><code>## Warning: package &#39;lpSolve&#39; was built under R version 3.5.2</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tau =<span class="st"> </span><span class="fl">0.3</span>
-A1 =<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">diag</span>(<span class="dv">2</span><span class="op">*</span>n),<span class="dv">0</span>)
-A2 =<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">diag</span>(n) , <span class="op">-</span><span class="kw">diag</span>( n) , <span class="dv">1</span>)
-r =<span class="st"> </span><span class="kw">lp</span>(<span class="st">&quot;min&quot;</span>, 
-       <span class="kw">c</span>(<span class="kw">rep</span>(tau ,n),<span class="kw">rep</span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>tau,n),<span class="dv">0</span>),
-       <span class="kw">rbind</span>(A1, A2),
-       <span class="kw">c</span>(<span class="kw">rep</span>(<span class="st">&quot;&gt;=&quot;</span>, <span class="dv">2</span><span class="op">*</span>n) , <span class="kw">rep</span>(<span class="st">&quot;=&quot;</span>, n)),
-       <span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">0</span> ,<span class="dv">2</span><span class="op">*</span>n), y))
-r</code></pre></div>
-<pre><code>## Success: the objective function is 30.98553</code></pre>
-</div>
-<div id="estimation-of-the-quantile-regression" class="section level3">
-<h3><span class="header-section-number">2.2.3</span> Estimation of the quantile regression</h3>
-<div id="the-one-variable-case" class="section level4">
-<h4><span class="header-section-number">2.2.3.1</span> The One variable case</h4>
-</div>
-<div id="the-multiple-regressor-case" class="section level4">
-<h4><span class="header-section-number">2.2.3.2</span> The multiple regressor case</h4>
-</div>
 </div>
 </div>
 <div id="replication-of-a-paper-using-quantile-regression" class="section level2">
@@ -342,7 +309,7 @@ data &lt;-<span class="st"> </span>data[, finalVars]
 <span class="dt">title=</span><span class="st">&quot;Summary Statistics 1992&quot;</span>, <span class="dt">summary =</span> <span class="ot">FALSE</span>, <span class="dt">out=</span><span class="st">&quot;./images/summary_table.tex&quot;</span>)</code></pre></div>
 <table style="text-align:center">
 <caption>
-<span id="tab:unnamed-chunk-16">Table 2.1: </span><strong>Summary Statistics 1992</strong>
+<span id="tab:unnamed-chunk-14">Table 2.1: </span><strong>Summary Statistics 1992</strong>
 </caption>
 <tr>
 <td colspan="3" style="border-bottom: 1px solid black">
@@ -1918,22 +1885,22 @@ F Statistic
 <h3><span class="header-section-number">2.3.1</span> Quantile Regression visualization</h3>
 <p>One of the most important ways to visualize and communicate the results from QR is plots. The ‘quantreg’ package has its own functionality. You will obtain graphs with or without confidence depending on the object you feed it: without CI if using the qr object before the summary, and with CI if it is fed the summary of a QR object. To plot we use the command <code>plot()</code>. In the first case we obtain all graphs for the previous estimation. A similar graph is presented in <span class="citation">(Koenker and Hallock 2001)</span>, in which the Authors the method and apply it to 1997 data (at this point you can reproduce the plots by yourself).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(quant_reg_res1992)</code></pre></div>
-<p><img src="Material_files/figure-html/unnamed-chunk-26-1.png" width="672" /></p>
+<p><img src="Material_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
 <p>If instead we want to inspect the effect we need more points, so more quantiles. We construct 19 observations and used the CI from the bootstrap option (as stated on the paper). In this case we only show the second independent variable (black dummy).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">time_<span class="dv">0</span> &lt;-<span class="st"> </span><span class="kw">Sys.time</span>()
 reg_exp &lt;-<span class="st"> </span><span class="kw">rq</span>(formula_qr,<span class="dt">tau =</span> <span class="kw">seq</span>(<span class="fl">0.05</span>,<span class="fl">0.95</span>,<span class="dt">by =</span> <span class="fl">0.05</span>), <span class="dt">data =</span> data, <span class="dt">method =</span> <span class="st">&#39;fn&#39;</span>)
 time_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">Sys.time</span>()
 
 <span class="kw">paste0</span>(<span class="st">&quot;Computing the quantiles took &quot;</span>,time_<span class="dv">1</span><span class="op">-</span>time_<span class="dv">0</span>)</code></pre></div>
-<pre><code>## [1] &quot;Computing the quantiles took 33.5350630283356&quot;</code></pre>
+<pre><code>## [1] &quot;Computing the quantiles took 30.7282950878143&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sum_reg &lt;-<span class="st"> </span><span class="kw">summary.rqs</span>(reg_exp, <span class="dt">method =</span> <span class="st">&#39;boot&#39;</span>)</code></pre></div>
 <pre><code>## Warning in summary.rq(xi, U = U, ...): 98 non-positive fis</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">time_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">Sys.time</span>()
 
 <span class="kw">paste0</span>(<span class="st">&quot;Computing the errors took &quot;</span>,time_<span class="dv">2</span><span class="op">-</span>time_<span class="dv">1</span>)</code></pre></div>
-<pre><code>## [1] &quot;Computing the errors took 1.13843530019124&quot;</code></pre>
+<pre><code>## [1] &quot;Computing the errors took 1.17197515169779&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(sum_reg, <span class="dt">parm =</span> <span class="kw">c</span>(<span class="dv">2</span>))</code></pre></div>
-<p><img src="Material_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
+<p><img src="Material_files/figure-html/unnamed-chunk-25-1.png" width="672" /></p>
 <p>The plot shows the estimates values, the confidence intervals and the OLS estimated value, so we can compare if the QR offers additional insights.</p>
 </div>
 </div>
@@ -1969,6 +1936,7 @@ time_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">Sy
 </div>
 <div id="references" class="section level2">
 <h2><span class="header-section-number">2.6</span> References</h2>
+<p>This material was possible thanks to the slides of David MARGOLIS (in PSE resources), the <a href="https://freakonometrics.hypotheses.org/files/2017/05/erasmus-1.pdf">slides of Arthur CHARPENTIER</a>, and the <a href="http://www.crest.fr/ckfinder/userfiles/files/Pageperso/xdhaultfoeuille/course_qreg.pdf">slides of of the course of Xavier D’HAULTFOEUILLE</a> (ENSAE).</p>
 
 <div id="refs" class="references">
 <div>

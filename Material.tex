@@ -146,7 +146,7 @@
 \begin{itemize}
 \tightlist
 \item
-  \textbf{Webpage:}
+  \textbf{Webpage:} {[}Under construction{]}
 \item
   \textbf{E-mail:}
   \href{mailto:jaimem.montana@gmail.com}{\nolinkurl{jaimem.montana@gmail.com}}
@@ -418,54 +418,6 @@ Under the rank invariant condition \(\beta_{\tau}\) can be interpreted
 as the effect on \(Y\) of an increase of one unit of \(X\) among
 entities at rank \(\tau\) in the distribution \(Y|X=x\).
 
-\subsection{Estimation of the
-quantiles}\label{estimation-of-the-quantiles}
-
-In order to understand how the estimation procedure works first we are
-going to set up the most simple problem, we are going to solve to find
-the value for a specific quantile in a distribution.
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{n =}\StringTok{ }\DecValTok{101}
-\KeywordTok{set.seed}\NormalTok{(}\DecValTok{10}\NormalTok{)}
-\NormalTok{y =}\StringTok{ }\KeywordTok{rlnorm}\NormalTok{(n)}
-\KeywordTok{quantile}\NormalTok{(y, }\FloatTok{0.3}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-##       30% 
-## 0.5092247
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{library}\NormalTok{(lpSolve)}
-\NormalTok{tau =}\StringTok{ }\FloatTok{0.3}
-\NormalTok{A1 =}\StringTok{ }\KeywordTok{cbind}\NormalTok{(}\KeywordTok{diag}\NormalTok{(}\DecValTok{2}\OperatorTok{*}\NormalTok{n),}\DecValTok{0}\NormalTok{)}
-\NormalTok{A2 =}\StringTok{ }\KeywordTok{cbind}\NormalTok{(}\KeywordTok{diag}\NormalTok{(n) , }\OperatorTok{-}\KeywordTok{diag}\NormalTok{( n) , }\DecValTok{1}\NormalTok{)}
-\NormalTok{r =}\StringTok{ }\KeywordTok{lp}\NormalTok{(}\StringTok{"min"}\NormalTok{, }
-       \KeywordTok{c}\NormalTok{(}\KeywordTok{rep}\NormalTok{(tau ,n),}\KeywordTok{rep}\NormalTok{(}\DecValTok{1} \OperatorTok{-}\StringTok{ }\NormalTok{tau,n),}\DecValTok{0}\NormalTok{),}
-       \KeywordTok{rbind}\NormalTok{(A1, A2),}
-       \KeywordTok{c}\NormalTok{(}\KeywordTok{rep}\NormalTok{(}\StringTok{">="}\NormalTok{, }\DecValTok{2}\OperatorTok{*}\NormalTok{n) , }\KeywordTok{rep}\NormalTok{(}\StringTok{"="}\NormalTok{, n)),}
-       \KeywordTok{c}\NormalTok{(}\KeywordTok{rep}\NormalTok{(}\DecValTok{0}\NormalTok{ ,}\DecValTok{2}\OperatorTok{*}\NormalTok{n), y))}
-\NormalTok{r}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Success: the objective function is 30.98553
-\end{verbatim}
-
-\subsection{Estimation of the quantile
-regression}\label{estimation-of-the-quantile-regression}
-
-\subsubsection{The One variable case}\label{the-one-variable-case}
-
-\subsubsection{The multiple regressor
-case}\label{the-multiple-regressor-case}
-
 \section{Replication of a paper using quantile
 regression}\label{replication-of-a-paper-using-quantile-regression}
 
@@ -736,11 +688,11 @@ result from them.
 
 \% Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard
 University. E-mail: hlavac at fas.harvard.edu \% Date and time: Sat, Sep
-21, 2019 - 11:23:21
+21, 2019 - 13:53:31
 
 \begin{table}[!htbp] \centering 
   \caption{Summary Statistics 1992} 
-  \label{tab:unnamed-chunk-16} 
+  \label{tab:unnamed-chunk-14} 
 \begin{tabular}{@{\extracolsep{5pt}} ccc} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
@@ -1173,7 +1125,7 @@ QR estimation.
 
 \% Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard
 University. E-mail: hlavac at fas.harvard.edu \% Date and time: Sat, Sep
-21, 2019 - 11:24:53
+21, 2019 - 13:54:54
 
 \begin{table}[!htbp] \centering 
   \caption{Quantile Regression Results} 
@@ -1264,7 +1216,7 @@ it to 1997 data (at this point you can reproduce the plots by yourself).
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{Material_files/figure-latex/unnamed-chunk-26-1.pdf}
+\includegraphics{Material_files/figure-latex/unnamed-chunk-24-1.pdf}
 
 If instead we want to inspect the effect we need more points, so more
 quantiles. We construct 19 observations and used the CI from the
@@ -1282,7 +1234,7 @@ second independent variable (black dummy).
 \end{Shaded}
 
 \begin{verbatim}
-## [1] "Computing the quantiles took 30.5315752029419"
+## [1] "Computing the quantiles took 31.2030770778656"
 \end{verbatim}
 
 \begin{Shaded}
@@ -1304,7 +1256,7 @@ second independent variable (black dummy).
 \end{Shaded}
 
 \begin{verbatim}
-## [1] "Computing the errors took 1.24900138378143"
+## [1] "Computing the errors took 1.29913858175278"
 \end{verbatim}
 
 \begin{Shaded}
@@ -1313,7 +1265,7 @@ second independent variable (black dummy).
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{Material_files/figure-latex/unnamed-chunk-27-1.pdf}
+\includegraphics{Material_files/figure-latex/unnamed-chunk-25-1.pdf}
 
 The plot shows the estimates values, the confidence intervals and the
 OLS estimated value, so we can compare if the QR offers additional
@@ -1378,6 +1330,13 @@ please let me know:
 \end{itemize}
 
 \section{References}\label{references}
+
+This material was possible thanks to the slides of David MARGOLIS (in
+PSE resources), the
+\href{https://freakonometrics.hypotheses.org/files/2017/05/erasmus-1.pdf}{slides
+of Arthur CHARPENTIER}, and the
+\href{http://www.crest.fr/ckfinder/userfiles/files/Pageperso/xdhaultfoeuille/course_qreg.pdf}{slides
+of of the course of Xavier D'HAULTFOEUILLE} (ENSAE).
 
 \bibliography{book.bib,packages.bib}
 
