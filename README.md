@@ -1,0 +1,1 @@
+This is the course notes for the Microeconometrics course in Paris School of Economics. The course and material was deveoped by Jaime MONTANA

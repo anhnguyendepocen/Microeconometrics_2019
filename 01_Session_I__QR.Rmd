@@ -1,0 +1,452 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+# Session I - Quantile regression
+
+```{r knitr-logo, echo=FALSE, out.width='90%', fig.align='center', warning=FALSE}
+knitr::include_graphics("./images/1200px-Logo_pse_petit.png")
+library(ggplot2)
+```
+
+## Objective
+
+This first class is to introduce your to using R for implementing quantile regressions. Therefore, we are going to:
+
+1. Understand the mathematical procedure behind the QR estmation and its computation (both for the estimates and for the the standard errors). This will help understanding the interpretation of the results obtained when applying the procedure in other contexts. 
+2. Reproduce a paper's tables and results using quantile regression
+
+        a) Import the data
+        b) Clean the data
+        c) Reproduce the summary statistics table
+        d) reproduce the regressions tables
+        
+3. Interpret the results
+4. Ways to communicate the results (plotting in R) 
+
+In the last part of the lecture I will just mention and make reference to other classes of QR estimators so you can investigate more on them;
+
+## Quantile Regression
+
+**For a summary on what is the intuition and objective of quantile regression check the article "Quantile Regression" [@koenker2001quantile].**
+
+QR is a method that allows you to analyse the relation between $x$ and $y$ across the $y$ distribution. It is useful when the researcher thinks there are *heterogeneous effects* at different values of the indipendent variable. It is important to remark that the heterogeneity is on the **outcome** $y$. Also, it is widely used in presence of outliers and extreme events (infinite variance), for OLS is inconsistent in such cases while the median is always defined and consistent. For quantiles other than $\tau = 0.5$ the estimation is robust, too.
+
+From the class we know the relationship between the **definition of the estimator**, the **risk function** used in the optimization (in the case of the lector the *'LAD function'*, when $\tau = 0.5$) and that we need to solve numerically the **optimization program** in order to identify the parameters of interest. Accordingly, we will explain how the algorithm works and we are going to perform the numerical optimization by hand from the simplest case to more complex problems.
+
+### Geometric interpretation
+
+From [@koenker2001quantile]:
+
+>Quantiles seem inseparably linked to the operations of ordering and sorting the sample observations that are usually used to define them. So it comes as a mild surprise to observe that we can define **the quantiles** through a simple alternative expedient **as an optimization problem**. Just as we can define the sample mean as the solution to the problem of minimizing a sum of squared residuals, we can define the *median as the solution to the problem of minimizing a sum of absolute residuals*. The symmetry of the piecewise linear absolute value function implies that the minimization of the sum of absolute residuals must equate the number of positive and negative residuals, thus assuring that there are the same number of observations above and below the median.
+>What about the other quantiles? Since the symmetry of the absolute value yields the median, perhaps minimizing a sum of asymmetrically weighted absolute residuals—simply giving differing weights to positive and negative residuals—would yield the quantiles. This is indeed the case.
+
+The slope of the coefficient is dividing the error space in two parts according to the desired proportion. It is important to notice that we are considering the error space, we are referring to the conditioning quantile. The difference with the OLS is then clear since the two processes are not comparable. While OLS might provide causal linkages, this is prevented in QR precisely for this reason.
+
+Let's generate some data to see how the line bisects the error space. Since we are generating random data the first thing is to set a seed so our example is reproducible. Then, we generate variance for our error term (not constant) and set an intercept and define the slope. We set everything in a 'data.frame' objecto to plot it using the package 'ggplot2'[@R-ggplot2].  
+
+```{r}
+set.seed(464)
+npoints <- 150
+x <- seq(0,10,length.out = npoints)        
+sigma <- 0.1 + 0.25*sqrt(x) + ifelse(x>6,1,0)                    
+intercept <- 2                                
+slope <- 0.2                              
+                             
+error <- rnorm(npoints,mean = 0, sd = sigma)      
+y <- intercept + slope*x + error                    
+dat <- data.frame(x,y)
+```
+
+Let's plot our synthetic data. We are going to plot the line crossing the 90th percentile conditioning on $X$ (dashed red line), the OLS curve (blue line with confidence intervals in grey) and the LAD regression (regression to the median, $\tau = 0.5$)
+
+```{r, warning = FALSE}
+ggplot(dat, aes(x,y)) + geom_point() + geom_smooth(method="lm") + 
+        geom_quantile(quantiles = 0.9, colour = 'red', linetype="dotted") +
+        geom_quantile(quantiles = 0.5, colour = 'green') 
+```
+
+We can interpret the causal relationship in quantile regression only under rank invariant condition. This requires that individuals have always the same ranking in the distribution of $Y(X)$ no matter the $X$. This is difficult to verify or believe in actual applications, but feasible in theory.
+
+Under the rank invariant condition $\beta_{\tau}$ can be interpreted as the effect on $Y$ of an increase of one unit of $X$  among entities at rank $\tau$ in the distribution $Y|X=x$.
+
+### Estimation of the quantiles
+
+In order to understand how the estimation procedure works first we are going to set up the most simple problem, we are going to solve to find the value for a specific quantile in a distribution. 
+
+```{r}
+n = 101
+set.seed(10)
+y = rlnorm(n)
+quantile(y, 0.3)
+
+```
+
+```{r}
+library(lpSolve)
+tau = 0.3
+A1 = cbind(diag(2*n),0)
+A2 = cbind(diag(n) , -diag( n) , 1)
+r = lp("min", 
+       c(rep(tau ,n),rep(1 - tau,n),0),
+       rbind(A1, A2),
+       c(rep(">=", 2*n) , rep("=", n)),
+       c(rep(0 ,2*n), y))
+r
+```
+
+
+### Estimation of the quantile regression
+
+#### The One variable case
+
+#### The multiple regressor case
+
+## Replication of a paper using quantile regression
+
+We are going to replicate the quantile regression procedure by [@abrevaya2002effects]. In the [paper](https://link.springer.com/article/10.1007/s001810000052) the author investigates the impact of different demographic characteristics and maternal behaviour on the weight at birth in the United States in 1992 and 1996. Why is this relevant:
+
+- There is a correlation between health problems after birth for underweight chidren
+- There might be a relation with labor market participation and educational attaintment later in life
+- There are incentives to create specific programs to deal with underweight children; it is important to understand such behaviours
+
+
+#### Data:
+
+In order to get the data we access the following [link](https://www.nber.org/data/vital-statistics-natality-data.html). Here you can download the 'NCHS' Vital Statistics Natality Birth Data', which is the data used in the paper. We are using only the 1992 and 1996 waves. To download the data follow this link [for the zip CSV file of 1992](https://www.nber.org/natality/1992/natl1992.csv.zip). One important thing to do when analizing the data is understand your data before the actual analysis. Before you start you take a minute or two to consider:
+
+- What is the data?
+- Where does it come from? What is the universe, the population and what is your sample.
+- What is the shape, format of your data? Do I have access to a data dictionary?
+
+In this case many of this questions are available in the documentation that is provided [at the following link] (https://www.nber.org/natality/1992/natl1992.pdf) detailing every variable in the dataset. From the documentation we can see the kind of information (a glimpse of the amount of variables) and the data counts ($4'069'428$ observations). An indicator of the size of the data is the size of the file: the zip file is *156 Mb* and the uncompressed version of the CSV *2.07 GB*! Even if this does not seem much, consider that all this data is stored in the cache of your RAM memory, and it can easily slow down even recent machines. For this reason it is better to read in only the columns that we are interested in. This requires reading the manual and a prior inspection of a subset of the data, which allows you to know the structure, column types and other properties. The most efficient function to open plain text files is *'fread'* from the *'data.table'* package [@R-data.table]. First let's investigate the data. The first thing to do is to load the required libraries int the current session:
+
+- *'data.table'* to open the data
+- *'quantreg'* to perform the quantile regression estimation
+- *'stargazer'* to export the results in latex
+- *'dplyr'* to manipulate the data to create the summary statistics
+
+```{r, warning=FALSE, comment=FALSE, message=FALSE}
+library(data.table)
+library(quantreg)
+library(stargazer)
+library(dplyr)
+library(kableExtra)
+```
+
+
+```{r, warning=FALSE, echo=FALSE}
+#This is hidden
+path_source <- "~/Dropbox Jaime/Dropbox/RAW_QR_ABREVAYA/natl1992.csv"
+```
+
+```{r, warning=FALSE, echo=TRUE, eval=FALSE}
+path_source <- "YOUR PATH GOES HERE"
+# for macOS and linux: use / in your path to data
+# for Win: rembember to use \\ instead of /
+```
+
+```{r open-head, eval=TRUE}
+data <- fread(path_source, nrows = c(100))
+head(data[,c(35:41)])
+```
+
+
+```{r, warning=FALSE}
+type_of_data <- data %>% summarise_all(typeof)
+type_of_data[35:41]
+```
+
+Now that we have had a look at the content of the database, let's import the data and clean it. To import only the relevant variables of the paper we create a list containing all the relevant variables for the estimation. I used the codebook to construct this list. Then we use this list within 'fread()' to import solely the desired columns. 
+
+```{r}
+desired <- c("birmon","mrace3","dmage","dbirwt","dplural","stnatexp",
+             "mraceimp","dmarimp","mageimp","cseximp","dmar","meduc6", 
+             "wtgain", "mpre5", "tobacco","cigar", "csex", "plurimp", "restatus")
+
+data <- fread(path_source, select = desired)
+
+```
+
+Following the indications of the paper:
+
+> To cut down he sample size, we have decided to use only births occurring in June [...] There is no evidence that suggest that the June samplediffers in any meaningful way to the full sample. The sample was further limited to singleton births and mothers who were either white or black, between ages 18 and 45, and residents of the United States. Observations for which there was missing information on any relevant variable were also dropped. Unfortunately, all births occurring in California, Indiana, New York,  and South Dakota had to be dropped from the sample since these states either did not asked a question about smoking during pregnancy or did not ask it in a form compatible with NHCS standards...   
+
+We need to apply the following filters:
+
+- Remove all obs. in months different than the sixth (June)
+- Remove all non white or non black mothers
+- Remove all obs. which age is not in [18,45] group
+- Remove the non stated weights
+- Remove all the obs. from California, New York, Indiana and South Dakota
+
+```{r}
+
+data <- data[which(data$restatus!=4),]
+data <- data[which(data$birmon==6),]
+data <- data[which(data$mrace3!=2),]
+data <- data[which(data$dmage>17),]
+data <- data[which(data$dmage<46),]
+data <- data[which(data$dbirwt!=9999),]
+data <- data[which(data$dplural==1),]
+data <- data[which(!(data$stnatexp %in% c("05","33","34","15","43"))),]
+```
+
+Moreover, we remove the missing observations. One particularity of many of the variables of the database is that the missing values are coded, meaning that are not representes by `'NA'` but by a code that changes in each variable. We are going to remove also the missing from those variables:
+
+```{r}
+data <- data[which(!(data$plurimp %in% c(1))),]
+data <- data[which(!(data$mraceimp %in% c(1))),]
+data <- data[which(!(data$dmarimp %in% c(1))),]
+data <- data[which(!(data$mageimp %in% c(1))),]
+data <- data[which(!(data$cseximp %in% c(1))),]
+toKeep <- c("dbirwt", "mrace3","dmar","dmage","meduc6", "wtgain", "mpre5", "tobacco","cigar", "csex")
+data <- as.data.frame(data)
+data <- data[,toKeep]
+data <- data[which(data$dbirwt!=9999),]
+data <- data[which(data$wtgain!=99),]
+data <- data[which(data$dmage!=99),]
+data <- data[which(data$meduc6!=6),]
+data <- data[which(data$mpre5!=5),]
+data <- data[which(data$tobacco!=9),]
+data <- data[which(data$cigar!=99),]
+data <- data[which(data$wtgain !=99),]
+```
+
+For the categorical variables (i.e. education of the mother), we create dummy variables. We keep the contrast (levels of reference) according to the paper. In this way we will be able to compare the results. 
+
+```{r}
+data$black <- ifelse(data$mrace3==3,1,0)
+data$married <- ifelse(data$dmar==1,1,0)
+data$agesq <- (data$dmage)^2
+data$hsgrad <- ifelse(data$meduc6==3,1,0)
+data$somecoll <- ifelse(data$meduc6==4,1,0)
+data$collgrad <- ifelse(data$meduc6==5,1,0)
+data$natal2 <- ifelse(data$mpre5==2,1,0)
+data$natal3 <- ifelse(data$mpre5==3,1,0)
+data$novisit <- ifelse(data$mpre5==4,1,0)
+data$nosmoke <- ifelse(data$tobacco==2,1,0)
+data$boy <- ifelse(data$csex==1,1,0)
+```
+
+We also relabel variables to match those in the paper:
+
+```{r}
+finalVars <- c("dbirwt","black", "married", "dmage", "agesq", "hsgrad", "somecoll", "collgrad", "wtgain", "natal2", "natal3", "novisit", "nosmoke", "cigar", "boy")
+data <- data[, finalVars]
+names(data) <- c("birwt","black", "married", "age", "agesq", "hsgrad", "somecoll", "collgrad","wtgain", "natal2", "natal3", "novisit", "nosmoke", "cigar", "boy") 
+```
+
+Now let's make a summary table. We are going to use the `dplyr` package [@R-dplyr] for the data transformation and the `stargazer` package [@R-stargazer] to nicely export the results. We construct the columns for all selected variables. To store the results it is convenient to save tables in \( \LaTeX \) format, so you can use them directly form that folder into your paper, or copy the result from them.
+
+```{r, warning=FALSE, message=FALSE, results = 'asis'}
+desc_stats <- round(as.data.frame(cbind(t(data %>% summarise_all(mean)),t(data %>% summarise_all(sd)))),3)
+names(desc_stats) <- c("Mean", "Standard Deviation")
+
+```
+
+```{r , results="asis"}
+stargazer::stargazer(desc_stats,
+type=ifelse(knitr::is_latex_output(),"latex","html"),
+label=knitr::opts_current$get("label"),
+title="Summary Statistics 1992", summary = FALSE, out="./images/summary_table.tex")
+```
+
+
+Now let's calculate the quantile regression:
+
+How does the command rq() work? An easy way to access the help file of a command, just put a question mark before it in the console, i.e. if you want to collect information on the *mean()* function you would type `?mean`. For our quantile regression, we are going to use the function `rq()` from the 'quantreg' package.
+
+From the help file we can see that the principal inputs of the function are 'formula' (the relationship to evaluate), the 'tau' (the vector of quantiles), and the 'data', which is a dataframe containing the information. Regarding the data it requires a specific type of object, a *'data.frame'*, and also specifies that if we have factors among our variables, it is important to provide a vector with the contrast levels. We do not have to provide it since we already constructed our dummies for such purpose. We are only missing the formula and the quantile vector.
+
+For the moment we are going to construct the formula: 
+
+```{r}
+Y <- "birwt"
+X <- paste(names(data[,-1]),collapse = " + ")
+formula_qr <- as.formula(paste(Y, " ~ ", X))
+formula_qr
+```
+
+And then we construct the vector of quantiles: 
+
+```{r}
+quantiles_table <- c(0.1,0.25,0.5,0.75,0.9)
+```
+
+As in the main slides, if the number of observations is not large enough, we can use the simplex method, but given that we have more than a hundred thousand observations we are going to use the *'Frish-Newton' interior point* method. We specify this option in the command options including the `method = "fn"` statement. After the calculation we will have an object of class 'rq' or 'rqs', depending on the number of quantiles specified; this might be relevant since some commands might behave differently if operated over this object. For example, the command `summary`, that is often used to get the summary statistics of a 'data.frame', when applied to a 'rq' or 'rqs' object returns the summary of the fit of the QR. 
+
+```{r}
+quant_reg_res1992 <- rq(formula_qr,tau = quantiles_table, data = data, method = 'fn')
+qr_results <- summary.rqs(quant_reg_res1992)
+qr_results
+```
+One important consideration is the kind of errors that the procedure is calculating when running the summary.  
+
+Nevertheless this kind of results are not easy to handle and manage, and is desireable to have a summary table like the one of the paper or to summarize the results in just one table. We have seen already that is possible to save the results in LaTeX, now we are going to save them in TXT format, which might be usefull in many cases. To this end, we select the first and second column of the results. If in this case the list contains only five items, is still acceptable to do it line by line. If an operation has more elements and is used often it is better to write a function to save time and avoid copypaste mistakes.
+
+```{r }
+tab_res <- as.data.frame(cbind(qr_results[[1]]$coefficients[,1], 
+                 qr_results[[2]]$coefficients[,1], 
+                 qr_results[[3]]$coefficients[,1], 
+                 qr_results[[4]]$coefficients[,1], 
+                 qr_results[[5]]$coefficients[,1]))
+names(tab_res) <- paste0("Tau_",quantiles_table,"_beta")
+
+tab_ES <- as.data.frame(cbind(qr_results[[1]]$coefficients[,2], 
+                 qr_results[[2]]$coefficients[,2], 
+                 qr_results[[3]]$coefficients[,2], 
+                 qr_results[[4]]$coefficients[,2], 
+                 qr_results[[5]]$coefficients[,2]))
+
+names(tab_ES) <- paste0("Tau_",quantiles_table,"_SE")
+
+results <- as.data.frame(cbind(tab_res,tab_ES))
+results <- results[,sort(names(results))]
+results <- results[-1,]
+
+```
+
+```{r}
+stargazer::stargazer(results, type='text', out="./images/qr_res1992.tex", summary = FALSE)
+```
+As aforementioned in the case of a vector of 20 or 50 quantiles it is better to use a **user written function**. We will use this opportunity to remember how to define user written functions (even if in this example is not necessary). An example of a function is presented to highlight the important parts:
+
+- Define the name
+- Define in parenteses the inputs and parameters of the function
+        - remember that default values and ordering are important
+- Define in brackets the procedure of the function
+- Return the output, results of the operation
+
+```{r}
+table_rq_beta_sd <- function(qr_obj){
+        # The function creates a summary table from the results of the command rq()
+        
+        len <- length(qr_obj)
+        
+        res_beta <- c()
+        for (i in 1:len) {
+                res <- qr_results[[i]]$coefficients[,1] 
+                res_beta <- cbind(res_beta,res)
+        }
+        
+        res_se <- c()
+        for (i in 1:len) {
+                resse <- qr_results[[i]]$coefficients[,2] 
+                res_se <- cbind(res_se,resse)
+        }
+        
+        tau <- c()
+        for (i in 1:len) {
+                tau <- c(tau,qr_results[[i]]$tau)
+        }
+        
+        res_beta <- as.data.frame(res_beta)
+        names(res_beta) <- paste0("Quant_",tau,"_beta")
+        res_se <- as.data.frame(res_se)
+        names(res_se) <- paste0("Quant_",tau,"_se")
+        
+        
+        results <- cbind.data.frame(res_beta,res_se)
+        results <- results[, order(names(results))]
+        return(results)
+}
+```
+
+Now we just have to call the function and introduce the object we created before:
+
+```{r}
+table_rq_beta_sd(qr_results)
+```
+
+If instead we want to reproduce the table of the paper, we need to compute  each of the QR in a separate object and calculate the OLS. Given that the QR regression results table has a different variable order than before, we use for comparison. We also redefine the formula to preserve such order.
+
+```{r}
+order_qr <- c("birwt","black", "married", "boy", "nosmoke", "cigar", "age", "agesq", "hsgrad", "somecoll", "collgrad","wtgain", "natal2", "natal3", "novisit")
+
+data <- data[,order_qr]
+Y <- "birwt"
+X <- paste(names(data[,-1]),collapse = " + ")
+formula_qr <- as.formula(paste(Y, " ~ ", X))
+formula_qr
+
+p10 <- rq(formula_qr,tau = c(0.1), data = data, method = 'fn')
+p25 <- rq(formula_qr,tau = c(0.25), data = data, method = 'fn')
+p50 <- rq(formula_qr,tau = c(0.5), data = data, method = 'fn')
+p75 <- rq(formula_qr,tau = c(0.75), data = data, method = 'fn')
+p90 <- rq(formula_qr,tau = c(0.9), data = data, method = 'fn')
+ols <- lm(formula_qr, data = data)
+```
+
+Finally, we put the results in a paper format using LaTeX syntax and 'stargazer' functionality. The table presented shows the results for the QR estimation.
+
+```{r, results='asis'}
+stargazer(p10,p25,p50,p75,p90,ols, title = "Quantile Regression Results", 
+          type=ifelse(knitr::is_latex_output(),"latex","html"), out ="./images/qr_rep_tab_92.tex")
+```
+
+### Quantile Regression visualization
+
+One of the most important ways to visualize and communicate the results from QR is plots. The 'quantreg' package has its own functionality. You will obtain graphs with or without confidence depending on the object you feed it: without CI if using the qr object before the summary, and with CI if it is fed the summary of a QR object. To plot we use the command `plot()`. In the first case we obtain all graphs for the previous estimation. A similar graph is presented in [@koenker2001quantile], in which the Authors the method and apply it to 1997 data (at this point you can reproduce the plots by yourself). 
+
+```{r}
+plot(quant_reg_res1992)
+```
+
+If instead we want to inspect the effect we need more points, so more quantiles. We construct 19 observations and used the CI from the bootstrap option (as stated on the paper). In this case we only show the second independent variable (black dummy). 
+
+
+```{r}
+time_0 <- Sys.time()
+reg_exp <- rq(formula_qr,tau = seq(0.05,0.95,by = 0.05), data = data, method = 'fn')
+time_1 <- Sys.time()
+
+paste0("Computing the quantiles took ",time_1-time_0)
+
+sum_reg <- summary.rqs(reg_exp, method = 'boot')
+
+time_2 <- Sys.time()
+
+paste0("Computing the errors took ",time_2-time_1)
+
+plot(sum_reg, parm = c(2))
+```
+
+The plot shows the estimates values, the confidence intervals and the OLS estimated value, so we can compare if the QR offers additional insights.
+
+
+## Exercises
+### Proposed exercise 1
+
+- Compute the quantile regression for the year 1996 to complete the descriptive statistics of the paper's table. Are they similar to 1992 results? What is equal? What is different? 
+- Compute the quantile regression for the same set of variables but for a recent year (after year 2000). Does the outcome change? If yes, what changes and how would you interpret it? 
+
+### Proposed exercise 2
+
+- Compute the quantile regression for the year 1992 and 1996 including a variable of your interest. Does the result change significantly? Why do you consider it relevant for the analysis? How do you interpret the results obtained? 
+
+
+## More on quantiles
+
+In this section I will only list other implementations of quantile regression that might be usefull for your future research. The list is presentend without any particular order. If you have any suggestions, please let me know:
+
+- Decomposition methods using quantiles [@machado2005counterfactual]
+- Un-conditional quantiles regression [@firpo2009unconditional]
+- Decomposition methods using un-conditional quantile methods [@firpo2018decomposing]
+- Quantile estimation with non linear effects
+- Parallel quantile estimation
+- Quantile regression for time series (CAViaR)
+- Quantile regression for Spatial Data (package McSpatial)
+- Quantile regression for panel data, which is under development since it does not exist (yet) a consistent estimator (package 'rqpd' and Ivan Canay's package)
+
+
+
+## References
+
+
+
+
+
+
+
