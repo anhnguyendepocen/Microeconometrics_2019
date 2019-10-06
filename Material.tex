@@ -124,7 +124,7 @@
   \postauthor{\par}
       \predate{\centering\large\emph}
   \postdate{\par}
-    \date{Updated the 2019-09-26}
+    \date{Updated the 2019-10-06}
 
 \usepackage{booktabs}
 \usepackage{booktabs}
@@ -703,8 +703,8 @@ result from them.
 \end{Shaded}
 
 \% Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard
-University. E-mail: hlavac at fas.harvard.edu \% Date and time: Thu, Sep
-26, 2019 - 14:10:27
+University. E-mail: hlavac at fas.harvard.edu \% Date and time: Sun, Oct
+06, 2019 - 22:57:48
 
 \begin{table}[!htbp] \centering 
   \caption{Summary Statistics 1992} 
@@ -1140,8 +1140,8 @@ QR estimation.
 \end{Shaded}
 
 \% Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard
-University. E-mail: hlavac at fas.harvard.edu \% Date and time: Thu, Sep
-26, 2019 - 14:11:51
+University. E-mail: hlavac at fas.harvard.edu \% Date and time: Sun, Oct
+06, 2019 - 22:59:05
 
 \begin{table}[!htbp] \centering 
   \caption{Quantile Regression Results} 
@@ -1250,7 +1250,7 @@ second independent variable (black dummy).
 \end{Shaded}
 
 \begin{verbatim}
-## [1] "Computing the quantiles took 31.714861869812"
+## [1] "Computing the quantiles took 29.9054930210114"
 \end{verbatim}
 
 \begin{Shaded}
@@ -1272,7 +1272,7 @@ second independent variable (black dummy).
 \end{Shaded}
 
 \begin{verbatim}
-## [1] "Computing the errors took 1.43210176626841"
+## [1] "Computing the errors took 1.07938568592072"
 \end{verbatim}
 
 \begin{Shaded}
@@ -1353,6 +1353,950 @@ PSE resources), the
 of Arthur CHARPENTIER}, and the
 \href{http://www.crest.fr/ckfinder/userfiles/files/Pageperso/xdhaultfoeuille/course_qreg.pdf}{slides
 of of the course of Xavier D'HAULTFOEUILLE} (ENSAE).
+
+\chapter{Session II - Maximum Likelihood Estimation
+(MLE)}\label{session-ii---maximum-likelihood-estimation-mle}
+
+\begin{center}\includegraphics[width=0.9\linewidth]{./images/1200px-Logo_pse_petit} \end{center}
+
+\section{Introduction}\label{introduction-1}
+
+In this second session of the microeconometrics tutorial we are going to
+use R and it`s functionality to do maximum likelihood estimation. The
+task that we are going to complete in this section are:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Understand the intuition behind Maximum likelihood estimation. We are
+  going to replicate a Poisson regression table (REF) using MLE.
+  Estimates are performed using a programmed function and a build-in
+  function.
+\item
+  Propose a model and derive the likelihood function from it. This part
+  is not going to be very deep in the explanation of the model,
+  derivation and assumptions. The aim of this sessions are on the
+  estimation (computation) and not in the model per se. I will however
+  referentiate the sources if you want to have a deeper look at the
+  model. Given that the last session we did something on health
+  economics, this time we change topic and will focus on labour
+  economics. As anecdote, when I first saw this I was very impressed! I
+  hope you are impressed too after today session!
+\item
+  Use the Current Population Survey (CPS) and understand how to handle
+  and manage this particular data set.
+
+\begin{verbatim}
++ Import the data
++ Use the specified columns
++ Clean data
+\end{verbatim}
+\item
+  Estimate the structural parameters of the proposed model (both for the
+  estimates and the standard errors, estimated using the \emph{delta
+  method}).
+\end{enumerate}
+
+\section{Maximum likelihood
+estimator}\label{maximum-likelihood-estimator}
+
+For the theory please check the slides of the course (class 2). Here we
+provide just a brief definition and the intuition on the application of
+the method. What is Maximum likelihood estimation (MLE)? MLE is a method
+of estimation in which we obtain the \emph{parameters} of our model
+under an \textbf{assumed} \emph{statistical model} and the available
+\emph{data}, such that our sample is the most probable.
+
+\begin{itemize}
+\item
+  Given a statistical model (given a model), select the parameters that
+  make the observed data more probable. By so we are doing inference in
+  the population that generated our data. and the DGP behind. We can
+  formulate \textbf{any} model and we will obtain a result; the only
+  restriction for the formulation is that it has probability 0.
+\item
+  Even if it is intuitive, rely on the \textbf{assumptions} (model,
+  statistical model, DGP), but not in the \textbf{validity}.
+\item
+  Validity of the models?
+\end{itemize}
+
+\begin{quote}
+``A model is a deliberate abstraction from reality. One model can be
+better than another, on one or several dimensions, but none are correct.
+They help us focus on the small set of phenomena in which we are
+interested, and/or have data regarding. When correctly developed and
+explained, it should be clear what set of phenomena are being excluded
+from consideration, and, at the end of the analysis, it is desirable to
+say how the omission of other relevant phenomena could have affected the
+results attained.
+\end{quote}
+
+\begin{quote}
+An advantage of a structured approach to empirical analysis is that it
+should be immediately clear what factors have been considered exogenous
+and which endogenous, the functional form assumptions made, etc." (C.
+Flinn,
+\href{http://www.econ.nyu.edu/user/flinnc/courses/CCA-RGSE-2019/search_estimation_notes.pdf}{lecture
+notes})
+\end{quote}
+
+In order to understand how MLE works we are going to make two examples
+today: Poisson regresson and a structural estimation.
+
+\subsection{Poisson regression}\label{poisson-regression}
+
+In this section we are going to replicate a paper by
+\href{https://www.danieltreisman.org/}{Daniel Treisman} published in AER
+2016. that uses the Poisson regression to modelate the number of
+millioners in a set of countries, given some country characteristics
+\citep{treisman2016russia}.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{What does the paper says?}
+\end{itemize}
+
+The main idea of the paper is \emph{provide} a robust \emph{model} from
+which we can predict the number of rich in a given country, given an
+economic environment (so called, country characteristics).
+
+After that is possible to compare the prediction versus the data; the
+author realizes that and no matter how the model is setted and
+specified, Russia has the largest number of anomalies
+(underpredictions).
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Why a Poisson regression?}
+\end{itemize}
+
+In Treisman's paper, the dependent variable --- the number of
+billionaires \(y_i\) in country \(i\) --- is modeled as a function of
+GDP per capita, population size, and years membership in GATT and WTO.
+He present 4 specifications including more variables.
+
+\begin{quote}
+``\ldots{} since the dependent variable is a count, Poisson rather than
+OLS regression is appropriate.''
+\end{quote}
+
+\subsubsection{Estimation}\label{estimation}
+
+You can acces the
+\href{https://www.aeaweb.org/aer/data/10605/P2016_1068_data.zip}{data}
+and the
+\href{https://pubs.aeaweb.org/doi/pdfplus/10.1257/aer.p20161068}{paper}
+in the provided links. Download and unzip the information. The file also
+contains a companion STATA code to reproduce the tables in the paper.
+Unzip the information and charge the dataset into R using the
+\texttt{haven} library \citep{R-haven}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data_mil <-}\StringTok{ }\KeywordTok{read_dta}\NormalTok{(}\StringTok{"YOUR PATH GOES HERE"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+To reproduce table 1 from the paper we need to filter the information
+for 2008. will only use that info for reproducing the table.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data_mil  <-}\StringTok{ }\NormalTok{data_mil[data_mil}\OperatorTok{$}\NormalTok{year }\OperatorTok{==}\StringTok{ }\DecValTok{2008}\NormalTok{,]}
+\end{Highlighting}
+\end{Shaded}
+
+Our \textbf{goal} is to \textbf{estimate a Poisson regression model},
+and there are built-in functions to do these kind of estimations using a
+command like \texttt{glm(...,\ family\ =\ "poisson")}. Our \textbf{goal}
+instead is to \textbf{use Maximum Likelihood estimation to reproduce
+such parameters} and understand how does this work. In order to have a
+benchmark for comparison let's see how the output of the first proposed
+model looks like:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{(}\KeywordTok{glm}\NormalTok{(}\DataTypeTok{formula =}\NormalTok{ numbil0 }\OperatorTok{~}\StringTok{ }\NormalTok{lngdppc }\OperatorTok{+}\StringTok{ }\NormalTok{lnpop }\OperatorTok{+}\StringTok{ }\NormalTok{gattwto08, }\DataTypeTok{family =} \KeywordTok{poisson}\NormalTok{(}\DataTypeTok{link=}\StringTok{'log'}\NormalTok{), }\DataTypeTok{data =}\NormalTok{ data_mil))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## glm(formula = numbil0 ~ lngdppc + lnpop + gattwto08, family = poisson(link = "log"), 
+##     data = data_mil)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -8.7615  -0.7585  -0.3775  -0.1010   9.0587  
+## 
+## Coefficients:
+##               Estimate Std. Error z value Pr(>|z|)    
+## (Intercept) -29.049536   0.638193 -45.518  < 2e-16 ***
+## lngdppc       1.083856   0.035064  30.911  < 2e-16 ***
+## lnpop         1.171362   0.024156  48.491  < 2e-16 ***
+## gattwto08     0.005968   0.001908   3.127  0.00176 ** 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 5942.23  on 196  degrees of freedom
+## Residual deviance:  669.95  on 193  degrees of freedom
+##   (354 observations deleted due to missingness)
+## AIC: 885.08
+## 
+## Number of Fisher Scoring iterations: 5
+\end{verbatim}
+
+Let's start our construction of the maximum likelihood introducing the
+Poisson regression model. Poisson regression is a generalized linear
+model form of regression analysis used to model count data \((1)\), in
+which the dependent variable have a Poisson distribution \((2)\), and
+the logarithm of the expected value can be modeled as a linear
+combination \((3)\).
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Count data: remark that all the numbers from a Poisson distribution
+  are integers.
+\item
+  Poisson distribution is defined as:
+  \[f(k,\lambda)=Pr(X=k)=\frac{\lambda^k e^{-\lambda}}{k!}\] A remark is
+  that the \textbf{mean} and variance form the Posson distribution is
+  equal to a constant \(\lambda\).
+\item
+  The \textbf{mean} can be expressed as a linear combination of the
+  parameters.
+  \[ \mu = E[y] = E[e^{y}] = E(y| \boldsymbol{X})=e^{\theta^{\prime} \boldsymbol{X}}=e^{\theta_0 + \theta_1 x_{i1}+ ... + \theta_k x_{ik} }\]
+  Combining condition \((2)\) and \((3)\), we obtain that the
+  probability mass function is given by:
+\end{enumerate}
+
+\[f(y_i,\lambda)=f(y_i,\mu)=\frac{\mu^y_i e^{-\mu}}{y_i!}\]
+
+The joint probability mass function is the equal to:
+
+\[f(\boldsymbol{Y}|\boldsymbol{X},\boldsymbol{\theta})=f(y_1,\mu) f(y_2,\mu)...f(y_n,\mu)    = \prod_{i=1}^n f(y_i,\mu|\boldsymbol{X},\boldsymbol{\theta})\]
+
+Our likelihood function instead takes as given the data (vector
+\(\boldsymbol{Y}\) and matrix \(\boldsymbol{X}\)) and calculates the
+likelihood given a parameter \(\theta\).
+
+\[\mathcal{L}(\boldsymbol{\theta} | \boldsymbol{Y},\boldsymbol{X}) = \prod_{i=1}^n f(\boldsymbol{\theta}|\boldsymbol{X},\boldsymbol{Y}) = \prod_{i=1}^n \frac{\mu_i^{y_i} e^{-\mu_i}}{y_i!}\]
+
+Finding the \(\boldsymbol{\hat{\theta}}\) that maximizes the likelihood
+function retrieves the estimation parameters. Before doing so we are
+going to use a monotonic transformation and take use as objective
+function the log-likelihhod of the function. Why? Think about
+derivatives of sums vs.~derivatives of products.
+\[\boldsymbol{\hat{\theta}} = \max_{\boldsymbol{\theta}} log( \mathcal{L}(\boldsymbol{\theta} | \boldsymbol{Y},\boldsymbol{X})) = \min _{\boldsymbol{\theta}} - log( \mathcal{L}(\boldsymbol{\theta} | \boldsymbol{Y},\boldsymbol{X})) \]
+Taking the logarithm then we have:
+
+\begin{equation}
+\begin{aligned}
+ \log( \mathcal{L}(\boldsymbol{\theta} | \boldsymbol{Y},\boldsymbol{X}))  &= \log \left( \prod_{i=1}^N \frac{\mu_i^y e^{-\mu}}{y_i!} \right) \\
+ &= \sum_{i=1}^N \log \left( \frac{\mu_i^{y_i} e^{-\mu_i}}{y_i!} \right)\\
+ &= \sum_{i=1}^N y_i \log \left(\mu_i \right) - \sum_{i=1}^N \log \left(\mu_i\right) -\sum_{i=1}^N \log \left(y_i! \right)\\
+\end{aligned}
+\end{equation}
+
+Where,
+
+\[ \mu = e^{\theta^{\prime} \boldsymbol{X}}=e^{\theta_0 + \theta_1 x_{i1}+ ... + \theta_k x_{ik} }\].
+
+Given that we can not find a solution using algebra, we are going to use
+the optimzer from the statistical software to maximize the
+log-likelihood function above derived. To do so we are going to use the
+\emph{optim} function from R. After going into the help vignette
+\texttt{?optim}, we realize we are going to need:
+
+\begin{itemize}
+\tightlist
+\item
+  A vector of initial values
+\item
+  The \textbf{function} to be \textbf{minimized}, that receives as
+  \textbf{input the vector of parameters} and \textbf{should return a
+  scalar} so it can be optimized.
+\item
+  \emph{Method} of optimization (?)
+\item
+  Optional hessian (boolean). Given that we need to calculate the
+  variance covariance matrix to estimate the standard errors of he
+  parameters it's going to come in handy the resulted Heassian.
+\end{itemize}
+
+Last tutorial we introduce the elements of a function, and the structure
+to define a funcion in R. In this tutorial we just recall as good
+practice that we are going to differenciate the inpus of the function:
+the parameters are the inputs that each timeare going to change in the
+optimization process, while the data for example will be a
+\textbf{static} kind of input. Another static input that we are going to
+use is the \emph{formula}, a type of R object which will allow us to
+extract the relevant information of he name of the variables, the
+columns, and the relationship between the variables (dependent or
+independent, interactions, dependance,\ldots{}).
+
+We start by writing the function. We call the function \emph{`LLcalc'},
+and define the inputs in the parentesis. One usefull function that we
+use in the first line is \texttt{model.matrix()}. This function takes a
+formula and provide the matrix that we are using in the regression,
+including the vector of ones of the intercept, the dummy variables, and
+the interactions.
+
+We are going to calculate the value of \(\mu\), and then the value of
+the individual contribution to the log-likelihood. After that we just
+sum and put a negative, since the optimizer minimizes by default. There
+is one technical detail that we are adressing using the package
+\texttt{Rmpfr}, which allow to store big in 128 bits (as the factorail
+of 400) \citep{R-Rmpfr}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{LLcalc <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(theta, formula, data)\{}
+\NormalTok{        ### Calculate the log-likelihood of a Poisson regression, }
+\NormalTok{        ### given a vector of parameters (1), }
+\NormalTok{        ### a relationship ()formula (2) }
+\NormalTok{        ### and a dataset (type: dataframe)}
+        
+\NormalTok{        rhs <-}\StringTok{ }\KeywordTok{model.matrix}\NormalTok{(formula, }\DataTypeTok{data =}\NormalTok{ data)}
+        \KeywordTok{colnames}\NormalTok{(rhs)[}\DecValTok{1}\NormalTok{] <-}\StringTok{ "Intercept"}
+\NormalTok{        Y <-}\StringTok{ }\KeywordTok{as.matrix}\NormalTok{(data[}\KeywordTok{rownames}\NormalTok{(rhs),}\KeywordTok{toString}\NormalTok{(formula[[}\DecValTok{2}\NormalTok{]])])}
+        \CommentTok{# Expected values \textbackslash{}mu }
+\NormalTok{        mu <-}\StringTok{ }\KeywordTok{exp}\NormalTok{(rhs }\OperatorTok{%*%}\StringTok{ }\NormalTok{theta)}
+        \CommentTok{# Value of the log likelihood}
+\NormalTok{        LL <-}\StringTok{ }\NormalTok{Y }\OperatorTok{*}\StringTok{ }\KeywordTok{log}\NormalTok{(mu)}\OperatorTok{-}\NormalTok{mu}\OperatorTok{-}\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{log}\NormalTok{(}\KeywordTok{gamma}\NormalTok{(}\KeywordTok{as}\NormalTok{(Y}\OperatorTok{+}\DecValTok{1}\NormalTok{,}\StringTok{"mpfr"}\NormalTok{))))}
+        
+        \CommentTok{#print(cbind(colnames(rhs),round(theta,3)))}
+        \KeywordTok{return}\NormalTok{(}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(LL, }\DataTypeTok{na.rm =}\NormalTok{ T))}
+        
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+In order to test the function we are going to test it with the data, a
+random \(\theta\), and the formula of the first column of table I in the
+paper.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{theta_test <-}\StringTok{ }\KeywordTok{rnorm}\NormalTok{(}\DecValTok{4}\NormalTok{)}
+\NormalTok{formula_}\DecValTok{1}\NormalTok{ <-}\StringTok{ }\KeywordTok{as.formula}\NormalTok{(numbil0 }\OperatorTok{~}\StringTok{ }\NormalTok{lngdppc }\OperatorTok{+}\StringTok{ }\NormalTok{lnpop }\OperatorTok{+}\StringTok{ }\NormalTok{gattwto08)}
+\KeywordTok{LLcalc}\NormalTok{(}\DataTypeTok{theta =}\NormalTok{ theta_test, }\DataTypeTok{formula =}\NormalTok{ formula_}\DecValTok{1}\NormalTok{, }\DataTypeTok{data =}\NormalTok{ data_mil)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 26030.13
+\end{verbatim}
+
+Now that we know is working is time to set up the optimizer. As we
+discuss before we need the function, some starting parameters, and the
+data and the formula which are the static inputs of our function.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{theta_}\DecValTok{0}\NormalTok{ <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\OperatorTok{-}\DecValTok{30}\NormalTok{,}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{,}\DecValTok{0}\NormalTok{)}
+\NormalTok{dTbp_beta <-}\StringTok{ }\KeywordTok{optim}\NormalTok{(}\DataTypeTok{par =}\NormalTok{ theta_}\DecValTok{0}\NormalTok{, }\DataTypeTok{fn =}\NormalTok{ LLcalc, }\DataTypeTok{data =}\NormalTok{ data_mil, }\DataTypeTok{formula =}\NormalTok{ formula_}\DecValTok{1}\NormalTok{, }\DataTypeTok{method =} \StringTok{"Nelder-Mead"}\NormalTok{, }\DataTypeTok{hessian =} \OtherTok{TRUE}\NormalTok{)}
+\KeywordTok{round}\NormalTok{(dTbp_beta}\OperatorTok{$}\NormalTok{par,}\DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] -29.052   1.084   1.171   0.006
+\end{verbatim}
+
+In order to complete the estimation we need calculate the standard
+errors. Since we have the Hessian, from we theory of the course we know
+that we can recover the Standard Errors, because:
+
+\begin{itemize}
+\tightlist
+\item
+  The negative of the hessian (provided as a linearization arround the
+  optimum of the LL maximization) is equal to the Fisher information
+  matrix.
+\end{itemize}
+
+\[[\mathcal{I}(\theta)]_{i,j}= \mathbf{E}\left[\left(\frac{\partial}{\partial \theta_i} \log f(X|\theta)\right)\left(\frac{\partial}{\partial \theta_j} \log f(X|\theta)\right)|\theta\right]=\left[\frac{\partial^2}{\partial \theta_i \partial \theta_j} \log f(X|\theta)|\theta\right]\]
+- The Fisher information matrix, when inverted is equal to the variance
+covariance matrix. (Actually, formally what Cramer Rao states is that
+the inverse is the lower bound of the variance if the estimator is
+unbiased.) - The variance covariance matrix has in the diagonal the
+variane for each parameter. Taking square root of it is going to give
+the standard errors. - Given that we minimize we dont have to multiply
+by -1, since the values of the LL are calculated over the negative
+likelihhod function.
+
+Taking in consideration these notions we the following standard errors
+that are equal to the previous regression.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fisher_info <-}\StringTok{ }\NormalTok{dTbp_beta}\OperatorTok{$}\NormalTok{hessian}
+\NormalTok{vcov <-}\StringTok{ }\KeywordTok{solve}\NormalTok{(fisher_info)}
+\NormalTok{se <-}\StringTok{ }\KeywordTok{sqrt}\NormalTok{(}\KeywordTok{diag}\NormalTok{(vcov))}
+\NormalTok{se}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.638233253 0.035068731 0.024155062 0.001907374
+\end{verbatim}
+
+To complete the exercise we are going to reproduce the whole table 1
+form the paper. For that we set up all the formulas (models) estimated.
+The paer provide the robust herrors, so we calculate them and we put
+them in the stargazer \citep{R-stargazer} output.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{formula_}\DecValTok{2}\NormalTok{ <-}\StringTok{ }\KeywordTok{as.formula}\NormalTok{(numbil0 }\OperatorTok{~}\StringTok{  }\NormalTok{lngdppc }\OperatorTok{+}\StringTok{ }\NormalTok{lnpop }\OperatorTok{+}\StringTok{  }\NormalTok{gattwto08 }\OperatorTok{+}\StringTok{  }\NormalTok{lnmcap08 }\OperatorTok{+}\StringTok{  }\NormalTok{rintr }\OperatorTok{+}\StringTok{  }\NormalTok{topint08)}
+\NormalTok{formula_}\DecValTok{3}\NormalTok{ <-}\StringTok{ }\KeywordTok{as.formula}\NormalTok{(numbil0 }\OperatorTok{~}\StringTok{  }\NormalTok{lngdppc }\OperatorTok{+}\StringTok{ }\NormalTok{lnpop }\OperatorTok{+}\StringTok{  }\NormalTok{gattwto08 }\OperatorTok{+}\StringTok{  }\NormalTok{lnmcap08 }\OperatorTok{+}\StringTok{  }\NormalTok{rintr }\OperatorTok{+}\StringTok{  }\NormalTok{topint08 }\OperatorTok{+}\StringTok{  }\NormalTok{nrrents }\OperatorTok{+}\StringTok{  }\NormalTok{roflaw)}
+\NormalTok{formula_}\DecValTok{4}\NormalTok{ <-}\StringTok{ }\KeywordTok{as.formula}\NormalTok{(numbil0 }\OperatorTok{~}\StringTok{  }\NormalTok{lngdppc }\OperatorTok{+}\StringTok{ }\NormalTok{lnpop }\OperatorTok{+}\StringTok{  }\NormalTok{gattwto08 }\OperatorTok{+}\StringTok{  }\NormalTok{lnmcap08 }\OperatorTok{+}\StringTok{  }\NormalTok{rintr }\OperatorTok{+}\StringTok{  }\NormalTok{topint08 }\OperatorTok{+}\StringTok{  }\NormalTok{nrrents }\OperatorTok{+}\StringTok{  }\NormalTok{roflaw }\OperatorTok{+}\StringTok{  }\NormalTok{fullprivproc)}
+
+\NormalTok{r1 <-}\StringTok{ }\KeywordTok{glm}\NormalTok{(}\DataTypeTok{formula =}\NormalTok{ formula_}\DecValTok{1}\NormalTok{, }\DataTypeTok{family =} \KeywordTok{poisson}\NormalTok{(}\DataTypeTok{link=}\StringTok{'log'}\NormalTok{), }\DataTypeTok{data =}\NormalTok{ data_mil)}
+\NormalTok{r2 <-}\StringTok{ }\KeywordTok{glm}\NormalTok{(}\DataTypeTok{formula =}\NormalTok{ formula_}\DecValTok{2}\NormalTok{, }\DataTypeTok{family =} \KeywordTok{poisson}\NormalTok{(}\DataTypeTok{link=}\StringTok{'log'}\NormalTok{), }\DataTypeTok{data =}\NormalTok{ data_mil)}
+\NormalTok{r3 <-}\StringTok{ }\KeywordTok{glm}\NormalTok{(}\DataTypeTok{formula =}\NormalTok{ formula_}\DecValTok{3}\NormalTok{, }\DataTypeTok{family =} \KeywordTok{poisson}\NormalTok{(}\DataTypeTok{link=}\StringTok{'log'}\NormalTok{), }\DataTypeTok{data =}\NormalTok{ data_mil)}
+\NormalTok{r4 <-}\StringTok{ }\KeywordTok{glm}\NormalTok{(}\DataTypeTok{formula =}\NormalTok{ formula_}\DecValTok{4}\NormalTok{, }\DataTypeTok{family =} \KeywordTok{poisson}\NormalTok{(}\DataTypeTok{link=}\StringTok{'log'}\NormalTok{), }\DataTypeTok{data =}\NormalTok{ data_mil)}
+
+\NormalTok{se_rob <-}\StringTok{ }\KeywordTok{list}\NormalTok{(}\KeywordTok{sqrt}\NormalTok{(}\KeywordTok{diag}\NormalTok{(sandwich}\OperatorTok{::}\KeywordTok{vcovHC.default}\NormalTok{(r1,}\DataTypeTok{type =} \StringTok{"HC0"}\NormalTok{))),}
+               \KeywordTok{sqrt}\NormalTok{(}\KeywordTok{diag}\NormalTok{(sandwich}\OperatorTok{::}\KeywordTok{vcovHC.default}\NormalTok{(r2,}\DataTypeTok{type =} \StringTok{"HC0"}\NormalTok{))),}
+               \KeywordTok{sqrt}\NormalTok{(}\KeywordTok{diag}\NormalTok{(sandwich}\OperatorTok{::}\KeywordTok{vcovHC.default}\NormalTok{(r3,}\DataTypeTok{type =} \StringTok{"HC0"}\NormalTok{))),}
+               \KeywordTok{sqrt}\NormalTok{(}\KeywordTok{diag}\NormalTok{(sandwich}\OperatorTok{::}\KeywordTok{vcovHC.default}\NormalTok{(r4,}\DataTypeTok{type =} \StringTok{"HC0"}\NormalTok{))))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{stargazer}\OperatorTok{::}\KeywordTok{stargazer}\NormalTok{(r1,r2,r3,r4, }\DataTypeTok{title =} \StringTok{"Table 1 - Poisson regression"}\NormalTok{, }
+          \DataTypeTok{type=}\KeywordTok{ifelse}\NormalTok{(knitr}\OperatorTok{::}\KeywordTok{is_latex_output}\NormalTok{(),}\StringTok{"latex"}\NormalTok{,}\StringTok{"html"}\NormalTok{), }\DataTypeTok{se =}\NormalTok{ se_rob, }\DataTypeTok{out =} \StringTok{"./images/RB_T_I.tex"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\% Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard
+University. E-mail: hlavac at fas.harvard.edu \% Date and time: Sun, Oct
+06, 2019 - 23:01:26
+
+\begin{table}[!htbp] \centering 
+  \caption{Table 1 - Poisson regression} 
+  \label{tab:} 
+\begin{tabular}{@{\extracolsep{5pt}}lcccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & \multicolumn{4}{c}{\textit{Dependent variable:}} \\ 
+\cline{2-5} 
+\\[-1.8ex] & \multicolumn{4}{c}{numbil0} \\ 
+\\[-1.8ex] & (1) & (2) & (3) & (4)\\ 
+\hline \\[-1.8ex] 
+ lngdppc & 1.084$^{***}$ & 0.717$^{***}$ & 0.737$^{***}$ & 0.963$^{***}$ \\ 
+  & (0.138) & (0.244) & (0.233) & (0.243) \\ 
+  & & & & \\ 
+ lnpop & 1.171$^{***}$ & 0.806$^{***}$ & 0.929$^{***}$ & 1.153$^{***}$ \\ 
+  & (0.097) & (0.213) & (0.195) & (0.293) \\ 
+  & & & & \\ 
+ gattwto08 & 0.006 & 0.007 & 0.004 & 0.0003 \\ 
+  & (0.007) & (0.006) & (0.006) & (0.004) \\ 
+  & & & & \\ 
+ lnmcap08 &  & 0.399$^{**}$ & 0.286$^{*}$ & 0.114 \\ 
+  &  & (0.172) & (0.167) & (0.237) \\ 
+  & & & & \\ 
+ rintr &  & $-$0.010 & $-$0.009 & $-$0.007 \\ 
+  &  & (0.010) & (0.010) & (0.009) \\ 
+  & & & & \\ 
+ topint08 &  & $-$0.051$^{***}$ & $-$0.058$^{***}$ & $-$0.060$^{***}$ \\ 
+  &  & (0.011) & (0.012) & (0.015) \\ 
+  & & & & \\ 
+ nrrents &  &  & $-$0.005 & 0.013 \\ 
+  &  &  & (0.010) & (0.013) \\ 
+  & & & & \\ 
+ roflaw &  &  & 0.203 & 0.342 \\ 
+  &  &  & (0.372) & (0.283) \\ 
+  & & & & \\ 
+ fullprivproc &  &  &  & $-$0.002$^{*}$ \\ 
+  &  &  &  & (0.001) \\ 
+  & & & & \\ 
+ Constant & $-$29.050$^{***}$ & $-$19.444$^{***}$ & $-$20.858$^{***}$ & $-$25.951$^{***}$ \\ 
+  & (2.578) & (4.820) & (4.255) & (6.240) \\ 
+  & & & & \\ 
+\hline \\[-1.8ex] 
+Observations & 197 & 131 & 131 & 113 \\ 
+Log Likelihood & $-$438.540 & $-$259.731 & $-$256.024 & $-$179.661 \\ 
+Akaike Inf. Crit. & 885.079 & 533.461 & 530.049 & 379.322 \\ 
+\hline 
+\hline \\[-1.8ex] 
+\textit{Note:}  & \multicolumn{4}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+\end{tabular} 
+\end{table}
+
+\section{Example II - Structural
+estimation}\label{example-ii---structural-estimation}
+
+In this section the goal is to estimate the parameters from likelihood
+function of a given model, and be able to calculate it in the
+statistical software (in this case we are using R). We are going to
+estimate the structural parameters of a very simple search model
+\citep{flinn1982new}, following
+\href{https://pdfs.semanticscholar.org/d55e/6da87f3d2e328987b44fd5462114adda6ec6.pdf}{Flinn
+and Heckman 1982}. This tutorial is not devoted to understanding such
+labor model, so we are going to describe the the model and its
+assumptions; from that point we are going to derivate the ML function.
+Then we are going to pass that function to the computer as in the
+previous case, and maximize it to find the parameters of the model.
+
+\subsubsection{The model:}\label{the-model}
+
+Agents are well behaved, and try to maximize it's utility maximizing the
+income they receive. When they are in unemployment, they face a cost
+\(c\) for searching. When they face it, offers from a \textbf{Poisson
+process} will arrive. The arrival offer rate is denoted by \(\lambda\),
+and it's probability by unit of time is also \(\lambda\). When they meet
+a \textbf{wage} is proposed from a \textbf{log-normal distribution} and
+the individuals can refuse to form the match or `seal the deal'. Another
+assumption is that the \emph{length of the employment spells} follow a
+\textbf{exponential distribution}, and there is a \textbf{constant risk
+of loosing the job} at a rate \(\eta\). Time is discounted at a rate
+\(\rho\).
+
+Such model is characterized by two bellman equations. The first equation
+is the \textbf{value of being employed} {[}qe. (3.2) of the paper{]}:
+
+\[ V_e(w) =  \frac{1}{\rho}[w + (1-\eta)V_e + \eta V_u]\]
+
+Which reorganizing terms is equal to:
+
+\[V_e(w) = \frac{1}{\rho + \eta}[w + \eta V_u ]\]
+
+The second equation is the \textbf{value of being unemployed}:
+
+\[V_u = \frac{1}{\rho}[c+(1-\lambda)V_u+ \lambda + \mathbf{E} \max \lbrace V_e, V_u \rbrace]\]
+
+Which, after rearranging is equal to:
+
+\[\rho V_u = -c + \frac{\lambda}{\rho + \eta} \int_{\rho V_u}(w-\rho V_u)f(w)\]
+
+These two equations describe the whole behaviour of the economy under
+the assumptions of the model. Now let's list all the assumptions that we
+have untill now, since they are going to be usefull for the construction
+of the likelihhod function:
+
+\begin{itemize}
+\item
+  From the model we have that the minimum accepted wage is equal to
+  \(w^* = \rho V_u\). In the paper the minimum accepted wage is not
+  estimated, but instead is taken from the data.
+\item
+  Arrival rate of offers: \(\lambda\).
+\item
+  Termination rate: \(\eta\)
+\item
+  Distribution of employment duration. \(f[t_e]= \eta e^{(-\eta t_e)}\);
+  the average duration is then \(\mathbf{E}[t_e]= \eta^{-1}\).
+\item
+  Rate of leaving the unemployed is equal to: \(\lambda (1- F(w^*))\).
+  We aare going to call this \(h_u\)
+\item
+  Distribution of unemployment duration is exponential
+  \(f[t_u]= h_u e^{-h_u t_u)}\). The expected value in unemployment then
+  is then equal to \((\lambda (1- F(w^*)))^{-1}=h_u^{-1}\)
+\item
+  The distribution of accepted wages is equal to:
+  \(\frac{f(w)}{1 - F(w^*)}\). The term below is to adjust it to a
+  distribution since a proper distribution must integrate to 1 and our
+  is left censored.
+\item
+  The distribution of employments spells is right censored. Given that
+  is negative exponential it coincide with the population.
+\end{itemize}
+
+Given all this information we can proceed to calculate the probability
+to sample an employed individual, and the probability to sample an
+unemployed individual. Let's start first by the probability of sample an
+unemployed indivdual:
+
+\[P(U)=\frac{\mathbf{E}[t_u]}{\mathbf{E}[t_u]+\mathbf{E}[t_e]}=\frac{h_u^{-1}}{h_u^{-1}+\eta^{-1}}=\frac{\eta}{h_u+\eta}\]
+Now let's state the probability of sample and employed individual:
+
+\[P(E)=\frac{\mathbf{E}[t_e]}{\mathbf{E}[t_u]+\mathbf{E}[t_e]}=\frac{\eta^{-1}}{h_u^{-1}+\eta^{-1}}=\frac{h_u}{h_u+\eta}\]
+
+Given that we have normally data on the duration of unemployment
+\(t_u^o\) and the wages \(w^o\) observed from census or surveys, we can
+calculate such parameters because now we can define the likelihood:
+
+\begin{equation}
+\begin{aligned}
+\mathcal{L}&=\prod_U [P(U) \times f(t_u^o)]\times \prod_E [P(E) \times f(w^o)]=\\
+&= \prod_U\left[ P(U) \times \lambda (1- F(w^*)) e^{- \lambda (1- F(w^*)) t_u} \right] \times \prod_E \left[P(E) \times \frac{f(w|\mu, \sigma)}{1 - F(w^*)} \right]=\\
+&=  \prod_U\left[\frac{\eta}{h_u+\eta}  \times \lambda (1- F(w^*)) e^{- \lambda (1- F(w^*)) t_u} \right] \times \prod_E \left[\frac{h_u}{h_u+\eta} \times \frac{f(w|\mu, \sigma)}{1 - F(w^*)} \right]=\\
+&=  \prod_U\left[\frac{\eta}{\lambda (1- F(w^*))+\eta}  \times \lambda (1- F(w^*)) e^{- \lambda (1- F(w^*)) t_u} \right] \times\\
+&\prod_E \left[\frac{\lambda (1- F(w^*))}{\lambda (1- F(w^*))+\eta} \times \frac{f(w|\mu, \sigma)}{1 - F(w^*)} \right]\\
+\end{aligned}
+\end{equation}
+
+After taking logs and rearranging terms we arrive to the following
+\textbf{log-likelihood}:
+
+\[\log \mathcal{L} = N \log(h_u) - h_u \sum t_u + N_u \log(\eta) + \sum f(w|\mu,\sigma) -  N_e \log(1-F(w^*))  - N_e \log(h_u + \eta)\]
+
+We just need to put this function into the optimizer with some data and
+we can obtain the parameters of the model. Before continuing to
+implement the likelihood function in R we are going to make a sop and
+gather some data to estimate our model.
+
+\subsubsection{The Data}\label{the-data}
+
+In order to estimate the model we just need two vectors of data:
+duration of unemployment for the unemployed and hourly wages for the
+employed. To make a real example we are going to use the Current
+population survey (CSP), but look that most of the household surveys
+contain these kind of data (i.e.~colombian GEIH).
+
+First we go to the \href{http://www.census.gov/cps/}{page of the CPS},
+and learn about the nature of the data. We can also download the
+historical monthly data from the
+\href{https://data.nber.org/data/cps_basic.html}{NBER webpage}. For this
+exercise we are going to use the January 2019 data, that can be optained
+following \href{https://data.nber.org/cps-basic/jan19pub.zip}{this
+link}. Download and unzip the dataset in your working directory. Take
+also a moment to check the required variables, looking the
+\href{https://data.nber.org/cps-basic/January_2017_Record_Layout.txt}{documentation
+for the data}. The open the dataset using the functionality of the
+reader package \citep{R-readr}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data <-}\StringTok{ }\KeywordTok{read_csv}\NormalTok{(}\StringTok{"jan19pub.dat"}\NormalTok{, }\DataTypeTok{col_names =} \OtherTok{FALSE}\NormalTok{, }\DataTypeTok{trim_ws =} \OtherTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+As you will see the data only contains 1 vector of text. Each row is a
+long sring of text. If you took the time of reading the documentation
+you will see that you can fin next to each variable the description and
+the location of the specific data in such long string. After reading the
+documentation we identify that in order to have a correct vector of
+wages for the employed and a correct vector of duration of the
+unemployed we are going to need the following information:
+
+\begin{longtable}[]{@{}lllll@{}}
+\toprule
+GROUP OF INTEREST & VARIABLE & LENGTH & DESCRIPTION &
+LOCATION\tabularnewline
+\midrule
+\endhead
+EMPLOYED & HRMIS & 2 & MONTH-IN-SAMPLE & 63 - 64\tabularnewline
+EMPLOYED & PEERNPER & 2 & PERIODICITY & 502 - 503\tabularnewline
+EMPLOYED & PEERNHRO & 2 & USUAL HOURS & 525 - 526\tabularnewline
+EMPLOYED & PRERNWA & 8 & WEEKLY EARNINGS RECODE & 527 -
+534\tabularnewline
+EMPLOYED & PRERNHLY & 4 & RECODE FOR HOURLY RATE & 520 -
+523\tabularnewline
+EMPLOYED & PEHRUSL1 & 2 & HOW MANY HOURS PER WEEK DO YOU WORK & 218 -
+219\tabularnewline
+EMPLOYED & PTWK & 1 & WEEKLY EARNINGS - TOP CODE & 535 -
+535\tabularnewline
+UNEMPLOYED & PEMLR & 2 & MONTHLY LABOR FORCE RECODE & 180 -
+181\tabularnewline
+UNEMPLOYED & RUNEDUR & 3 & DURATION OF UNEMPLOYMENT FOR & 407 -
+409\tabularnewline
+ALL & GESTFIPS & 2 & FEDERAL INFORMATION STATE & 93 - 94\tabularnewline
+\bottomrule
+\end{longtable}
+
+After identifying this information we proceed to filter the information
+which is necessary. In order to do so we are going to create a database
+for the employed and a database for the unemployed given that the
+identification involves different infromation and variables. Let's begin
+with employed: we create a \emph{`data.frame'} containing the relevant
+colums and we extract the information by the position in the string.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{employed <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\KeywordTok{matrix}\NormalTok{(}\OtherTok{NA}\NormalTok{, }\DataTypeTok{nrow =} \KeywordTok{nrow}\NormalTok{(data), }\DataTypeTok{ncol =} \DecValTok{8}\NormalTok{))}
+
+\KeywordTok{colnames}\NormalTok{(employed) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(  }\StringTok{"HRMIS"}\NormalTok{,}
+                          \StringTok{"PEERNPER"}\NormalTok{,}
+                          \StringTok{"PEERNHRO"}\NormalTok{,}
+                          \StringTok{"PRERNWA"}\NormalTok{,}
+                          \StringTok{"PRERNHLY"}\NormalTok{,}
+                          \StringTok{"PTWK"}\NormalTok{,}
+                          \StringTok{"PEHRUSL1"}\NormalTok{,}
+                          \StringTok{"GESTFIPS"}\NormalTok{)}
+
+\NormalTok{employed}\OperatorTok{$}\NormalTok{HRMIS          <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(data,}\DecValTok{1}\NormalTok{, }\ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{substr}\NormalTok{(}\KeywordTok{toString}\NormalTok{(x),}\DecValTok{63}\NormalTok{,}\DecValTok{64}\NormalTok{)))}
+\NormalTok{employed}\OperatorTok{$}\NormalTok{PEERNPER       <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(data,}\DecValTok{1}\NormalTok{, }\ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{substr}\NormalTok{(}\KeywordTok{toString}\NormalTok{(x),}\DecValTok{502}\NormalTok{,}\DecValTok{503}\NormalTok{)))}
+\NormalTok{employed}\OperatorTok{$}\NormalTok{PEERNHRO       <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(data,}\DecValTok{1}\NormalTok{, }\ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{substr}\NormalTok{(}\KeywordTok{toString}\NormalTok{(x),}\DecValTok{525}\NormalTok{,}\DecValTok{526}\NormalTok{)))}
+\NormalTok{employed}\OperatorTok{$}\NormalTok{PRERNWA        <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(data,}\DecValTok{1}\NormalTok{, }\ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{substr}\NormalTok{(}\KeywordTok{toString}\NormalTok{(x),}\DecValTok{527}\NormalTok{,}\DecValTok{534}\NormalTok{)))}
+\NormalTok{employed}\OperatorTok{$}\NormalTok{PRERNHLY       <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(data,}\DecValTok{1}\NormalTok{, }\ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{substr}\NormalTok{(}\KeywordTok{toString}\NormalTok{(x),}\DecValTok{520}\NormalTok{,}\DecValTok{523}\NormalTok{)))}
+\NormalTok{employed}\OperatorTok{$}\NormalTok{PTWK           <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(data,}\DecValTok{1}\NormalTok{, }\ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{substr}\NormalTok{(}\KeywordTok{toString}\NormalTok{(x),}\DecValTok{535}\NormalTok{,}\DecValTok{535}\NormalTok{)))}
+\NormalTok{employed}\OperatorTok{$}\NormalTok{PEHRUSL1       <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(data,}\DecValTok{1}\NormalTok{, }\ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{substr}\NormalTok{(}\KeywordTok{toString}\NormalTok{(x),}\DecValTok{218}\NormalTok{,}\DecValTok{219}\NormalTok{)))}
+\NormalTok{employed}\OperatorTok{$}\NormalTok{GESTFIPS       <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(data,}\DecValTok{1}\NormalTok{, }\ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{substr}\NormalTok{(}\KeywordTok{toString}\NormalTok{(x),}\DecValTok{93}\NormalTok{,}\DecValTok{94}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+Reading the documentation we identify that the invalid cases are coded
+\(0\) or negative values \(-1,-2,\dots\). We reclassify this coded
+infromation as \texttt{NA}, a \emph{not available} or \emph{missing}
+value. We are going to keep the observations that are from the outgoing
+rotations (have earnings information). After that we are going to filter
+the valid hourly waes and convert the weekkly waes to hours using the
+number of hours. We are going to keep only the people that has this
+information. We are also going to take the right number of decimal for
+the variables which specify it. We are going to keep only the
+observations that are above the legal federal minimum wage of \(7,5\)
+USD, and we are going to trim the data at the percentile 99.9\%.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{employed[employed}\OperatorTok{<=}\DecValTok{0}\NormalTok{] <-}\StringTok{ }\OtherTok{NA}
+        
+\NormalTok{employed <-}\StringTok{ }\NormalTok{employed[}\KeywordTok{which}\NormalTok{(employed}\OperatorTok{$}\NormalTok{HRMIS }\OperatorTok{%in%}\StringTok{ }\KeywordTok{c}\NormalTok{(}\DecValTok{4}\NormalTok{,}\DecValTok{8}\NormalTok{)),]}
+\NormalTok{employed <-}\StringTok{ }\NormalTok{employed[}\KeywordTok{which}\NormalTok{(employed}\OperatorTok{$}\NormalTok{PEERNPER }\OperatorTok{>}\StringTok{ }\DecValTok{0}\NormalTok{),]}
+\NormalTok{employed <-}\StringTok{ }\NormalTok{employed[}\OperatorTok{-}\KeywordTok{which}\NormalTok{(employed}\OperatorTok{$}\NormalTok{PRERNHLY }\OperatorTok{==}\StringTok{ }\DecValTok{9999}\NormalTok{),]}
+\NormalTok{employed}\OperatorTok{$}\NormalTok{PRERNHLY <-}\StringTok{ }\NormalTok{employed}\OperatorTok{$}\NormalTok{PRERNHLY}\OperatorTok{/}\DecValTok{100}
+\NormalTok{employed <-}\StringTok{ }\NormalTok{employed[}\OperatorTok{-}\KeywordTok{which}\NormalTok{(employed}\OperatorTok{$}\NormalTok{PTWK }\OperatorTok{==}\StringTok{ }\DecValTok{1}\NormalTok{),]}
+\NormalTok{employed}\OperatorTok{$}\NormalTok{PRERNWA <-}\StringTok{ }\NormalTok{employed}\OperatorTok{$}\NormalTok{PRERNWA}\OperatorTok{/}\DecValTok{100}
+
+\NormalTok{employed}\OperatorTok{$}\NormalTok{wages <-}\StringTok{ }\KeywordTok{ifelse}\NormalTok{(employed}\OperatorTok{$}\NormalTok{PRERNHLY }\OperatorTok{>}\StringTok{ }\DecValTok{0} \OperatorTok{&}\StringTok{ }\OperatorTok{!}\KeywordTok{is.na}\NormalTok{(employed}\OperatorTok{$}\NormalTok{PRERNHLY),}
+\NormalTok{                         employed}\OperatorTok{$}\NormalTok{PRERNHLY,}
+                         \KeywordTok{ifelse}\NormalTok{(}\OperatorTok{!}\KeywordTok{is.na}\NormalTok{(employed}\OperatorTok{$}\NormalTok{PRERNWA) }\OperatorTok{&}\StringTok{ }\OperatorTok{!}\KeywordTok{is.na}\NormalTok{(employed}\OperatorTok{$}\NormalTok{PEHRUSL1),}
+\NormalTok{                                employed}\OperatorTok{$}\NormalTok{PRERNWA}\OperatorTok{/}\NormalTok{employed}\OperatorTok{$}\NormalTok{PEHRUSL1,}
+                                \OtherTok{NA}\NormalTok{)}
+\NormalTok{                         )}
+
+\NormalTok{employed <-}\StringTok{ }\NormalTok{employed[}\KeywordTok{which}\NormalTok{(}\OperatorTok{!}\KeywordTok{is.na}\NormalTok{(employed}\OperatorTok{$}\NormalTok{wages)),]}
+\NormalTok{employed <-}\StringTok{ }\NormalTok{employed[}\KeywordTok{which}\NormalTok{(employed}\OperatorTok{$}\NormalTok{wages }\OperatorTok{>=}\StringTok{ }\FloatTok{7.25}\NormalTok{),]}
+\NormalTok{employed <-}\StringTok{ }\NormalTok{employed[}\KeywordTok{which}\NormalTok{(employed}\OperatorTok{$}\NormalTok{wages }\OperatorTok{<=}\StringTok{ }\KeywordTok{quantile}\NormalTok{(employed}\OperatorTok{$}\NormalTok{wages, }\FloatTok{0.999}\NormalTok{)),]}
+
+\NormalTok{tokeep_e <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"GESTFIPS"}\NormalTok{, }\StringTok{"wages"}\NormalTok{)}
+\NormalTok{employed <-}\StringTok{ }\NormalTok{employed[,tokeep_e]}
+\NormalTok{employed}\OperatorTok{$}\NormalTok{duration_U <-}\StringTok{ }\DecValTok{0}
+\end{Highlighting}
+\end{Shaded}
+
+Now we proceed to do the same for the unemployed: We collect the
+infromation in each variable following the position. We take the people
+that the labor employment status is unemployment and that has
+information on the duration. Then we convert the information to montly
+data.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{unemployed <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\KeywordTok{matrix}\NormalTok{(}\OtherTok{NA}\NormalTok{, }\DataTypeTok{nrow =} \KeywordTok{nrow}\NormalTok{(data), }\DataTypeTok{ncol =} \DecValTok{3}\NormalTok{))}
+\KeywordTok{colnames}\NormalTok{(unemployed) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"PEMLR"}\NormalTok{,}
+                        \StringTok{"RUNEDUR"}\NormalTok{,}
+                        \StringTok{"GESTFIPS"}\NormalTok{)}
+
+\NormalTok{unemployed}\OperatorTok{$}\NormalTok{PEMLR          <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(data,}\DecValTok{1}\NormalTok{, }\ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{substr}\NormalTok{(}\KeywordTok{toString}\NormalTok{(x),}\DecValTok{180}\NormalTok{,}\DecValTok{181}\NormalTok{)))}
+\NormalTok{unemployed}\OperatorTok{$}\NormalTok{RUNEDUR        <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(data,}\DecValTok{1}\NormalTok{, }\ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{substr}\NormalTok{(}\KeywordTok{toString}\NormalTok{(x),}\DecValTok{407}\NormalTok{,}\DecValTok{409}\NormalTok{)))}
+\NormalTok{unemployed}\OperatorTok{$}\NormalTok{GESTFIPS       <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(data,}\DecValTok{1}\NormalTok{, }\ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{substr}\NormalTok{(}\KeywordTok{toString}\NormalTok{(x),}\DecValTok{93}\NormalTok{,}\DecValTok{94}\NormalTok{))}
+
+\NormalTok{unemployed <-}\StringTok{ }\NormalTok{unemployed[}\KeywordTok{which}\NormalTok{(unemployed}\OperatorTok{$}\NormalTok{PEMLR }\OperatorTok{%in%}\StringTok{ }\KeywordTok{c}\NormalTok{(}\DecValTok{3}\NormalTok{,}\DecValTok{4}\NormalTok{)),]}
+\NormalTok{unemployed <-}\StringTok{ }\NormalTok{unemployed[}\KeywordTok{which}\NormalTok{(unemployed}\OperatorTok{$}\NormalTok{RUNEDUR }\OperatorTok{>}\StringTok{ }\DecValTok{0}\NormalTok{),]}
+\NormalTok{unemployed}\OperatorTok{$}\NormalTok{duration_U <-}\StringTok{ }\NormalTok{unemployed}\OperatorTok{$}\NormalTok{RUNEDUR}\OperatorTok{/}\FloatTok{4.333}
+\NormalTok{unemployed <-}\StringTok{ }\NormalTok{unemployed[,}\KeywordTok{c}\NormalTok{(}\StringTok{"GESTFIPS"}\NormalTok{,}\StringTok{"duration_U"}\NormalTok{)]}
+\NormalTok{unemployed}\OperatorTok{$}\NormalTok{wages <-}\StringTok{ }\DecValTok{0} 
+\NormalTok{unemployed <-}\StringTok{ }\NormalTok{unemployed[,}\KeywordTok{c}\NormalTok{(}\StringTok{"GESTFIPS"}\NormalTok{,}\StringTok{"wages"}\NormalTok{, }\StringTok{"duration_U"}\NormalTok{)]}
+\end{Highlighting}
+\end{Shaded}
+
+We the attach the two data frames:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data <-}\StringTok{ }\KeywordTok{rbind}\NormalTok{(employed,unemployed)}
+\end{Highlighting}
+\end{Shaded}
+
+We are going to select and calculate the MLE using only each state. For
+this exercise we are going to use the information on Nevada
+(\(GESTFIPS = 32\))
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data_sub <-}\StringTok{ }\NormalTok{data[}\KeywordTok{which}\NormalTok{(data}\OperatorTok{$}\NormalTok{GESTFIPS}\OperatorTok{==}\StringTok{"32"}\NormalTok{),]}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{Estimation}\label{estimation-1}
+
+In order to estimate the identified log likelihood we are going to code
+two auxiliary funcions that appear all the time in the procedure. The
+first one is the
+\href{https://en.wikipedia.org/wiki/Log-normal_distribution}{log-normal
+density function}:
+
+\[\phi \left( \frac{\log(x) - \mu}{\sigma} \right)(\frac{1}{x \sigma})\]
+Where \(\phi\) is the probability density function of the \(N(0,1)\)
+distribution.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lognorm <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(x,mu,sigma)\{}
+\NormalTok{        res <-}\StringTok{ }\KeywordTok{dnorm}\NormalTok{((}\KeywordTok{log}\NormalTok{(x)}\OperatorTok{-}\NormalTok{mu)}\OperatorTok{/}\NormalTok{(sigma))}\OperatorTok{*}\NormalTok{(}\DecValTok{1}\OperatorTok{/}\NormalTok{(sigma}\OperatorTok{*}\NormalTok{x))}
+        \KeywordTok{return}\NormalTok{(res)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+The second function is the \emph{survival function}, which is the value
+of the probability to be over the minimum accepted wage given a
+distribution. We define the survival as \((1- F(w^*))\). The cumulative
+distribution function of the log-normal is equalt to:
+
+\[\Phi \left( \frac{\log(x) - \mu}{\sigma} \right)\] Where \(\Phi\) is
+the cumulative distribution function of the standard normal
+distribution.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{surv <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(val,mu,sigma)\{}
+\NormalTok{        res <-}\StringTok{ }\DecValTok{1} \OperatorTok{-}\StringTok{ }\KeywordTok{pnorm}\NormalTok{((}\KeywordTok{log}\NormalTok{(val)}\OperatorTok{-}\NormalTok{mu)}\OperatorTok{/}\NormalTok{(sigma))}
+        \KeywordTok{return}\NormalTok{(res)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+There are other functions already developed that are suitable for this
+kind of problems. One xample is the \texttt{mle2} function from the
+\emph{`bbmle'} package \citep{R-bbmle}. This is useful since the
+function deals with standard errors and provide other information that
+might be usefull. There are some difference between the \texttt{optim()}
+method already covered and the \texttt{mle2()} function. This function
+requires:
+
+\begin{itemize}
+\item
+  Function to calculate negative log-likelihood
+\item
+  A start list for the optimizer
+\item
+  The optimizer used
+\item
+  Given that we are going to introcue the data as an input of the
+  function, we need the data
+\end{itemize}
+
+Now we are going to code the log-likelihood function we had recovered
+using the same procedure as in the previous example:
+
+First we are going to code each of the parameters as an input in the
+function so the function can recognize it, and as mentioned earlier also
+the data. Then we are going to write the likelihood using the definition
+derived earlier.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{LLfnct_mle <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(alambda,aeta,amu,asigma, data)\{}
+        
+        
+\NormalTok{        lambda =}\StringTok{ }\KeywordTok{exp}\NormalTok{(alambda) }
+\NormalTok{        eta    =}\StringTok{ }\KeywordTok{exp}\NormalTok{(aeta) }
+\NormalTok{        mu     =}\StringTok{ }\NormalTok{amu}
+\NormalTok{        sigma  =}\StringTok{ }\KeywordTok{exp}\NormalTok{(asigma) }
+        
+\NormalTok{        w_star <-}\StringTok{ }\KeywordTok{min}\NormalTok{(data[}\KeywordTok{which}\NormalTok{(data}\OperatorTok{$}\NormalTok{wages }\OperatorTok{>}\StringTok{ }\DecValTok{0}\NormalTok{),]}\OperatorTok{$}\NormalTok{wages)}
+        
+        
+\NormalTok{        h_u <-}\StringTok{ }\NormalTok{lambda }\OperatorTok{*}\StringTok{ }\KeywordTok{surv}\NormalTok{(w_star, mu, sigma)}
+\NormalTok{        n <-}\StringTok{ }\KeywordTok{nrow}\NormalTok{(data)}
+\NormalTok{        n_u <-}\StringTok{  }\KeywordTok{nrow}\NormalTok{(data[}\KeywordTok{which}\NormalTok{(data}\OperatorTok{$}\NormalTok{duration_U }\OperatorTok{>}\StringTok{ }\DecValTok{0}\NormalTok{),])}
+\NormalTok{        n_e <-}\StringTok{ }\NormalTok{(n}\OperatorTok{-}\NormalTok{n_u)}
+        
+\NormalTok{        LL <-}\StringTok{   }\NormalTok{n }\OperatorTok{*}\StringTok{ }\KeywordTok{log}\NormalTok{(h_u) }\OperatorTok{-}
+\StringTok{                }\NormalTok{n_e }\OperatorTok{*}\StringTok{ }\KeywordTok{log}\NormalTok{(}\KeywordTok{surv}\NormalTok{(w_star, mu, sigma)) }\OperatorTok{-}
+\StringTok{                }\NormalTok{h_u }\OperatorTok{*}\StringTok{ }\KeywordTok{sum}\NormalTok{(data}\OperatorTok{$}\NormalTok{duration_U) }\OperatorTok{+}
+\StringTok{                }\NormalTok{n_u }\OperatorTok{*}\StringTok{ }\KeywordTok{log}\NormalTok{(eta) }\OperatorTok{+}
+\StringTok{                }\KeywordTok{sum}\NormalTok{(}\KeywordTok{log}\NormalTok{(}\KeywordTok{lognorm}\NormalTok{(data[}\KeywordTok{which}\NormalTok{(data}\OperatorTok{$}\NormalTok{wages}\OperatorTok{>}\DecValTok{0}\NormalTok{),]}\OperatorTok{$}\NormalTok{wages,mu,sigma))) }\OperatorTok{-}
+\StringTok{                }\NormalTok{n_e }\OperatorTok{*}\StringTok{ }\KeywordTok{log}\NormalTok{(eta }\OperatorTok{+}\StringTok{ }\NormalTok{h_u)}
+        
+        \CommentTok{#print(cbind(c("lambda = ","eta = ","mu = ","sigma = "),c(lambda,eta,mu,sigma)))}
+        \KeywordTok{return}\NormalTok{(}\OperatorTok{-}\NormalTok{LL)}
+        
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+After that we just have to set up the maximizer and maximize the
+function:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{m0 <-}\StringTok{ }\KeywordTok{mle2}\NormalTok{(LLfnct_mle, }
+           \DataTypeTok{start =} \KeywordTok{list}\NormalTok{(}\DataTypeTok{alambda =}\OperatorTok{-}\DecValTok{1}\NormalTok{,}
+                        \DataTypeTok{aeta =} \OperatorTok{-}\DecValTok{1}\NormalTok{, }
+                        \DataTypeTok{amu =} \DecValTok{3}\NormalTok{,}
+                        \DataTypeTok{asigma =} \OperatorTok{-}\DecValTok{1}\NormalTok{), }
+           \DataTypeTok{data =} \KeywordTok{list}\NormalTok{(}\DataTypeTok{data =}\NormalTok{ data_sub),}
+           \DataTypeTok{optimizer =} \StringTok{"nlminb"}\NormalTok{)}
+
+\NormalTok{m0}\OperatorTok{@}\NormalTok{coef}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    alambda       aeta        amu     asigma 
+## -0.4541099 -1.8175680  2.7146674 -0.4361533
+\end{verbatim}
+
+All the coeficients need to be transformed so we recover them and
+present the results. But before that we are going to calculate the
+standard error using the delta method and the information from the
+hessian. At the end what we are doing is just rescaling the errors.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lambda <-}\StringTok{ }\KeywordTok{exp}\NormalTok{(m0}\OperatorTok{@}\NormalTok{coef[}\StringTok{"alambda"}\NormalTok{])}
+\NormalTok{eta <-}\StringTok{ }\KeywordTok{exp}\NormalTok{(m0}\OperatorTok{@}\NormalTok{coef[}\StringTok{"aeta"}\NormalTok{])}
+\NormalTok{mu <-}\StringTok{ }\NormalTok{m0}\OperatorTok{@}\NormalTok{coef[}\StringTok{"amu"}\NormalTok{]}
+\NormalTok{sigma <-}\StringTok{ }\KeywordTok{exp}\NormalTok{(m0}\OperatorTok{@}\NormalTok{coef[}\StringTok{"asigma"}\NormalTok{])}
+
+
+\NormalTok{fisher_info <-}\StringTok{ }\NormalTok{m0}\OperatorTok{@}\NormalTok{details}\OperatorTok{$}\NormalTok{hessian}
+\NormalTok{vcov_mle <-}\StringTok{ }\KeywordTok{solve}\NormalTok{(fisher_info)}
+\NormalTok{prop_sigma<-}\KeywordTok{sqrt}\NormalTok{(}\KeywordTok{c}\NormalTok{(lambda}\OperatorTok{^}\DecValTok{2}\NormalTok{,eta}\OperatorTok{^}\DecValTok{2}\NormalTok{,mu}\OperatorTok{^}\DecValTok{2}\NormalTok{,sigma}\OperatorTok{^}\DecValTok{2}\NormalTok{) }\OperatorTok{*}\StringTok{ }\KeywordTok{diag}\NormalTok{(vcov_mle))}
+\KeywordTok{names}\NormalTok{(prop_sigma) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"lambda"}\NormalTok{,}\StringTok{"eta"}\NormalTok{,}\StringTok{"mu"}\NormalTok{,}\StringTok{"sigma"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{stargazer}\NormalTok{(}\KeywordTok{cbind}\NormalTok{(}\StringTok{"parameter"}\NormalTok{ =}\StringTok{ }\KeywordTok{names}\NormalTok{(prop_sigma), }\StringTok{"theta"}\NormalTok{ =}\KeywordTok{c}\NormalTok{(lambda,eta,mu,sigma), prop_sigma),}
+          \DataTypeTok{title =} \StringTok{"Model parameters MLE - Nevada (Jan 2019)"}\NormalTok{, }
+          \DataTypeTok{type=}\KeywordTok{ifelse}\NormalTok{(knitr}\OperatorTok{::}\KeywordTok{is_latex_output}\NormalTok{(),}\StringTok{"latex"}\NormalTok{,}\StringTok{"html"}\NormalTok{), }\DataTypeTok{out =} \StringTok{"./images/SE_Nevada.tex"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\% Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard
+University. E-mail: hlavac at fas.harvard.edu \% Date and time: Sun, Oct
+06, 2019 - 23:02:01
+
+\begin{table}[!htbp] \centering 
+  \caption{Model parameters MLE - Nevada (Jan 2019)} 
+  \label{tab:} 
+\begin{tabular}{@{\extracolsep{5pt}} cccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & parameter & theta & prop\_sigma \\ 
+\hline \\[-1.8ex] 
+alambda & lambda & 0.635012931441372 & 0.0900528154150777 \\ 
+aeta & eta & 0.16242027479781 & 0.0379917018868457 \\ 
+amu & mu & 2.71466743713899 & 0.270516421768113 \\ 
+asigma & sigma & 0.646518617780906 & 0.0678137201168286 \\ 
+\hline \\[-1.8ex] 
+\end{tabular} 
+\end{table}
+
+\section{References}\label{references-1}
+
+This material was possible thanks to the slides of David MARGOLIS (in
+PSE resources), the course of C. FLinn at CCA 2017, and
+\href{https://python.quantecon.org/mle.html}{QuantEcon MLE}.
 
 \bibliography{book.bib,packages.bib}
 
