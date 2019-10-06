@@ -31,7 +31,7 @@
   
   
 <link rel="prev" href="index.html"/>
-
+<link rel="next" href="session-ii-maximum-likelihood-estimation-mle.html"/>
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -134,6 +134,14 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul></li>
 <li class="chapter" data-level="2.5" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#more-on-quantiles"><i class="fa fa-check"></i><b>2.5</b> More on quantiles</a></li>
 <li class="chapter" data-level="2.6" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#references"><i class="fa fa-check"></i><b>2.6</b> References</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="session-ii-maximum-likelihood-estimation-mle.html"><a href="session-ii-maximum-likelihood-estimation-mle.html"><i class="fa fa-check"></i><b>3</b> Session II - Maximum Likelihood Estimation (MLE)</a><ul>
+<li class="chapter" data-level="3.1" data-path="session-ii-maximum-likelihood-estimation-mle.html"><a href="session-ii-maximum-likelihood-estimation-mle.html#introduction-1"><i class="fa fa-check"></i><b>3.1</b> Introduction</a></li>
+<li class="chapter" data-level="3.2" data-path="session-ii-maximum-likelihood-estimation-mle.html"><a href="session-ii-maximum-likelihood-estimation-mle.html#maximum-likelihood-estimator"><i class="fa fa-check"></i><b>3.2</b> Maximum likelihood estimator</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="session-ii-maximum-likelihood-estimation-mle.html"><a href="session-ii-maximum-likelihood-estimation-mle.html#poisson-regression"><i class="fa fa-check"></i><b>3.2.1</b> Poisson regression</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="session-ii-maximum-likelihood-estimation-mle.html"><a href="session-ii-maximum-likelihood-estimation-mle.html#example-ii---structural-estimation"><i class="fa fa-check"></i><b>3.3</b> Example II - Structural estimation</a></li>
+<li class="chapter" data-level="3.4" data-path="session-ii-maximum-likelihood-estimation-mle.html"><a href="session-ii-maximum-likelihood-estimation-mle.html#references-1"><i class="fa fa-check"></i><b>3.4</b> References</a></li>
 </ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
@@ -1902,13 +1910,13 @@ reg_exp &lt;-<span class="st"> </span><span class="kw">rq</span>(formula_qr,<spa
 time_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">Sys.time</span>()
 
 <span class="kw">paste0</span>(<span class="st">&quot;Computing the quantiles took &quot;</span>,time_<span class="dv">1</span><span class="op">-</span>time_<span class="dv">0</span>)</code></pre></div>
-<pre><code>## [1] &quot;Computing the quantiles took 30.0709180831909&quot;</code></pre>
+<pre><code>## [1] &quot;Computing the quantiles took 33.1726651191711&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sum_reg &lt;-<span class="st"> </span><span class="kw">summary.rqs</span>(reg_exp, <span class="dt">method =</span> <span class="st">&#39;boot&#39;</span>)</code></pre></div>
 <pre><code>## Warning in summary.rq(xi, U = U, ...): 98 non-positive fis</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">time_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">Sys.time</span>()
 
 <span class="kw">paste0</span>(<span class="st">&quot;Computing the errors took &quot;</span>,time_<span class="dv">2</span><span class="op">-</span>time_<span class="dv">1</span>)</code></pre></div>
-<pre><code>## [1] &quot;Computing the errors took 1.09215033451716&quot;</code></pre>
+<pre><code>## [1] &quot;Computing the errors took 1.26933179696401&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(sum_reg, <span class="dt">parm =</span> <span class="kw">c</span>(<span class="dv">2</span>))</code></pre></div>
 <p><img src="Material_files/figure-html/unnamed-chunk-25-1.png" width="672" /></p>
 <p>The plot shows the estimates values, the confidence intervals and the OLS estimated value, so we can compare if the QR offers additional insights.</p>
@@ -1948,35 +1956,6 @@ time_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">Sy
 <h2><span class="header-section-number">2.6</span> References</h2>
 <p>This material was possible thanks to the slides of David MARGOLIS (in PSE resources), the <a href="https://freakonometrics.hypotheses.org/files/2017/05/erasmus-1.pdf">slides of Arthur CHARPENTIER</a>, and the <a href="http://www.crest.fr/ckfinder/userfiles/files/Pageperso/xdhaultfoeuille/course_qreg.pdf">slides of of the course of Xavier D’HAULTFOEUILLE</a> (ENSAE).</p>
 
-<div id="refs" class="references">
-<div>
-<p>Abrevaya, Jason. 2002. “The Effects of Demographics and Maternal Behavior on the Distribution of Birth Outcomes.” In <em>Economic Applications of Quantile Regression</em>, 247–57. Springer.</p>
-</div>
-<div>
-<p>Dowle, Matt, and Arun Srinivasan. 2019. <em>Data.table: Extension of ‘Data.frame‘</em>. <a href="https://CRAN.R-project.org/package=data.table" class="uri">https://CRAN.R-project.org/package=data.table</a>.</p>
-</div>
-<div>
-<p>Firpo, Sergio, Nicole M Fortin, and Thomas Lemieux. 2009. “Unconditional Quantile Regressions.” <em>Econometrica</em> 77 (3). Wiley Online Library: 953–73.</p>
-</div>
-<div>
-<p>Firpo, Sergio, Nicole Fortin, and Thomas Lemieux. 2018. “Decomposing Wage Distributions Using Recentered Influence Function Regressions.” <em>Econometrics</em> 6 (2). Multidisciplinary Digital Publishing Institute: 28.</p>
-</div>
-<div>
-<p>Hlavac, Marek. 2018. <em>Stargazer: Well-Formatted Regression and Summary Statistics Tables</em>. <a href="https://CRAN.R-project.org/package=stargazer" class="uri">https://CRAN.R-project.org/package=stargazer</a>.</p>
-</div>
-<div>
-<p>Koenker, Roger, and Kevin F Hallock. 2001. “Quantile Regression.” <em>Journal of Economic Perspectives</em> 15 (4): 143–56.</p>
-</div>
-<div>
-<p>Machado, José AF, and José Mata. 2005. “Counterfactual Decomposition of Changes in Wage Distributions Using Quantile Regression.” <em>Journal of Applied Econometrics</em> 20 (4). Wiley Online Library: 445–65.</p>
-</div>
-<div>
-<p>Wickham, Hadley, Winston Chang, Lionel Henry, Thomas Lin Pedersen, Kohske Takahashi, Claus Wilke, Kara Woo, and Hiroaki Yutani. 2019. <em>Ggplot2: Create Elegant Data Visualisations Using the Grammar of Graphics</em>. <a href="https://CRAN.R-project.org/package=ggplot2" class="uri">https://CRAN.R-project.org/package=ggplot2</a>.</p>
-</div>
-<div>
-<p>Wickham, Hadley, Romain François, Lionel Henry, and Kirill Müller. 2018. <em>Dplyr: A Grammar of Data Manipulation</em>. <a href="https://CRAN.R-project.org/package=dplyr" class="uri">https://CRAN.R-project.org/package=dplyr</a>.</p>
-</div>
-</div>
 </div>
 </div>
 
@@ -1991,8 +1970,8 @@ This book is in <b><a href="open.html#open">Open Review</a></b>. I want your fee
           </div>
         </div>
       </div>
-<a href="index.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-
+<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="session-ii-maximum-likelihood-estimation-mle.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
