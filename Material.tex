@@ -124,23 +124,9 @@
   \postauthor{\par}
       \predate{\centering\large\emph}
   \postdate{\par}
-    \date{Updated the 2019-10-06}
+    \date{Updated the 2019-10-07}
 
 \usepackage{booktabs}
-\usepackage{booktabs}
-\usepackage{longtable}
-\usepackage{array}
-\usepackage{multirow}
-\usepackage{wrapfig}
-\usepackage{float}
-\usepackage{colortbl}
-\usepackage{pdflscape}
-\usepackage{tabu}
-\usepackage{threeparttable}
-\usepackage{threeparttablex}
-\usepackage[normalem]{ulem}
-\usepackage{makecell}
-\usepackage{xcolor}
 
 \begin{document}
 \maketitle
@@ -703,8 +689,8 @@ result from them.
 \end{Shaded}
 
 \% Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard
-University. E-mail: hlavac at fas.harvard.edu \% Date and time: Sun, Oct
-06, 2019 - 22:57:48
+University. E-mail: hlavac at fas.harvard.edu \% Date and time: Mon, Oct
+07, 2019 - 18:10:06
 
 \begin{table}[!htbp] \centering 
   \caption{Summary Statistics 1992} 
@@ -1140,8 +1126,8 @@ QR estimation.
 \end{Shaded}
 
 \% Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard
-University. E-mail: hlavac at fas.harvard.edu \% Date and time: Sun, Oct
-06, 2019 - 22:59:05
+University. E-mail: hlavac at fas.harvard.edu \% Date and time: Mon, Oct
+07, 2019 - 18:11:30
 
 \begin{table}[!htbp] \centering 
   \caption{Quantile Regression Results} 
@@ -1250,7 +1236,7 @@ second independent variable (black dummy).
 \end{Shaded}
 
 \begin{verbatim}
-## [1] "Computing the quantiles took 29.9054930210114"
+## [1] "Computing the quantiles took 30.9130508899689"
 \end{verbatim}
 
 \begin{Shaded}
@@ -1272,7 +1258,7 @@ second independent variable (black dummy).
 \end{Shaded}
 
 \begin{verbatim}
-## [1] "Computing the errors took 1.07938568592072"
+## [1] "Computing the errors took 1.12076198259989"
 \end{verbatim}
 
 \begin{Shaded}
@@ -1362,29 +1348,27 @@ of of the course of Xavier D'HAULTFOEUILLE} (ENSAE).
 \section{Introduction}\label{introduction-1}
 
 In this second session of the microeconometrics tutorial we are going to
-use R and it`s functionality to do maximum likelihood estimation. The
-task that we are going to complete in this section are:
+implement Maximum Likelihood Estimation in R. The essential steps are:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \item
-  Understand the intuition behind Maximum likelihood estimation. We are
-  going to replicate a Poisson regression table (REF) using MLE.
-  Estimates are performed using a programmed function and a build-in
-  function.
+  Understand the intuition behind Maximum likelihood estimation. We
+  awill replicate a Poisson regression table using MLE. We will both
+  write our own custom function and a built-in one.
 \item
-  Propose a model and derive the likelihood function from it. This part
-  is not going to be very deep in the explanation of the model,
-  derivation and assumptions. The aim of this sessions are on the
-  estimation (computation) and not in the model per se. I will however
-  referentiate the sources if you want to have a deeper look at the
-  model. Given that the last session we did something on health
-  economics, this time we change topic and will focus on labour
-  economics. As anecdote, when I first saw this I was very impressed! I
-  hope you are impressed too after today session!
+  Propose a model and derive its likelihood function. This part is not
+  going to be very deep in the explanation of the model, derivation and
+  assumptions. The aim of this sessions are on the estimation
+  (computation) and not in the model per se. I will however refer the
+  sources if you want to have a deeper look at the model. Given that the
+  last session we did something on health economics, this time we change
+  topic and will focus on labour economics. As anecdote, when I first
+  saw this I was very impressed! I hope you are impressed too after
+  today session!
 \item
   Use the Current Population Survey (CPS) and understand how to handle
-  and manage this particular data set.
+  and manage this particular dataset.
 
 \begin{verbatim}
 + Import the data
@@ -1393,25 +1377,26 @@ task that we are going to complete in this section are:
 \end{verbatim}
 \item
   Estimate the structural parameters of the proposed model (both for the
-  estimates and the standard errors, estimated using the \emph{delta
+  estimates and the standard errors, obtaind via the \emph{delta
   method}).
 \end{enumerate}
 
 \section{Maximum likelihood
 estimator}\label{maximum-likelihood-estimator}
 
-For the theory please check the slides of the course (class 2). Here we
-provide just a brief definition and the intuition on the application of
-the method. What is Maximum likelihood estimation (MLE)? MLE is a method
-of estimation in which we obtain the \emph{parameters} of our model
+For the theory please refer to the slides of the course (class 2). Here
+we just provide a brief definition and the intuition to the method
+application. What is Maximum likelihood estimation (MLE)? MLE is an
+estimation method in which we obtain the \emph{parameters} of our model
 under an \textbf{assumed} \emph{statistical model} and the available
 \emph{data}, such that our sample is the most probable.
 
 \begin{itemize}
 \item
-  Given a statistical model (given a model), select the parameters that
-  make the observed data more probable. By so we are doing inference in
-  the population that generated our data. and the DGP behind. We can
+  Given a statistical model (ie, an economic model with suitable
+  stochastic features), select the parameters that make the observed
+  data most probable. In this way, we are doing inference in the
+  population that generated our data and the DGP behind. We can
   formulate \textbf{any} model and we will obtain a result; the only
   restriction for the formulation is that it has probability 0.
 \item
@@ -1441,15 +1426,15 @@ Flinn,
 notes})
 \end{quote}
 
-In order to understand how MLE works we are going to make two examples
-today: Poisson regresson and a structural estimation.
+To understand how MLE works we will use two examples today: a Poisson
+regression and a structural estimation.
 
 \subsection{Poisson regression}\label{poisson-regression}
 
 In this section we are going to replicate a paper by
 \href{https://www.danieltreisman.org/}{Daniel Treisman} published in AER
-2016. that uses the Poisson regression to modelate the number of
-millioners in a set of countries, given some country characteristics
+2016. It applies Poisson regression to the number of millioners in a set
+of countries, conditional on some country characteristics
 \citep{treisman2016russia}.
 
 \begin{itemize}
@@ -1458,13 +1443,12 @@ millioners in a set of countries, given some country characteristics
   \textbf{What does the paper says?}
 \end{itemize}
 
-The main idea of the paper is \emph{provide} a robust \emph{model} from
-which we can predict the number of rich in a given country, given an
-economic environment (so called, country characteristics).
+The main idea of the paper is \emph{provide} a robust \emph{model} to
+predict the number of rich in a given country, given an economic
+environment specific to said country.
 
-After that is possible to compare the prediction versus the data; the
-author realizes that and no matter how the model is setted and
-specified, Russia has the largest number of anomalies
+In comparing data and predictions the Author finds that, regardless of
+the model specification, Russia reports the highest number of anomalies
 (underpredictions).
 
 \begin{itemize}
@@ -1473,10 +1457,10 @@ specified, Russia has the largest number of anomalies
   \textbf{Why a Poisson regression?}
 \end{itemize}
 
-In Treisman's paper, the dependent variable --- the number of
-billionaires \(y_i\) in country \(i\) --- is modeled as a function of
+In Treisman's paper the dependent variable --- the number of
+billionaires \(y_i\) in country \(i\) --- is modelled as a function of
 GDP per capita, population size, and years membership in GATT and WTO.
-He present 4 specifications including more variables.
+He also presents 4 alternative specifications.
 
 \begin{quote}
 ``\ldots{} since the dependent variable is a count, Poisson rather than
@@ -1491,8 +1475,8 @@ and the
 \href{https://pubs.aeaweb.org/doi/pdfplus/10.1257/aer.p20161068}{paper}
 in the provided links. Download and unzip the information. The file also
 contains a companion STATA code to reproduce the tables in the paper.
-Unzip the information and charge the dataset into R using the
-\texttt{haven} library \citep{R-haven}:
+Unzip the information and load the dataset in R using the \texttt{haven}
+library \citep{R-haven}:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1501,7 +1485,7 @@ Unzip the information and charge the dataset into R using the
 \end{Shaded}
 
 To reproduce table 1 from the paper we need to filter the information
-for 2008. will only use that info for reproducing the table.
+for 2008, as it is the year considered in the main analisys.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1509,13 +1493,13 @@ for 2008. will only use that info for reproducing the table.
 \end{Highlighting}
 \end{Shaded}
 
-Our \textbf{goal} is to \textbf{estimate a Poisson regression model},
-and there are built-in functions to do these kind of estimations using a
-command like \texttt{glm(...,\ family\ =\ "poisson")}. Our \textbf{goal}
-instead is to \textbf{use Maximum Likelihood estimation to reproduce
-such parameters} and understand how does this work. In order to have a
-benchmark for comparison let's see how the output of the first proposed
-model looks like:
+Our \textbf{goal} is to \textbf{estimate a Poisson regression model} and
+there are built-in functions to do these kind of estimations using a
+one-line command like \texttt{glm(...,\ family\ =\ "poisson")}. Our
+\textbf{goal} instead is to \textbf{use Maximum Likelihood estimation to
+reproduce such parameters} and understand how this works. In order to
+have a benchmark for comparison let's see how the output of the first
+proposed model looks like:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1552,35 +1536,35 @@ model looks like:
 ## Number of Fisher Scoring iterations: 5
 \end{verbatim}
 
-Let's start our construction of the maximum likelihood introducing the
-Poisson regression model. Poisson regression is a generalized linear
-model form of regression analysis used to model count data \((1)\), in
-which the dependent variable have a Poisson distribution \((2)\), and
-the logarithm of the expected value can be modeled as a linear
-combination \((3)\).
+Let's start the construction of the maximum likelihood introducing the
+Poisson regression model. The starting assumptions are: Poisson
+regression is a generalized linear model form of regression analysis
+used to model count data \((1)\), in which the dependent variable has a
+Poisson distribution \((2)\), and the logarithm of the expected value
+can be modeled as a linear combination \((3)\).
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  Count data: remark that all the numbers from a Poisson distribution
+  Count data: notice that all the numbers from a Poisson distribution
   are integers.
 \item
-  Poisson distribution is defined as:
-  \[f(k,\lambda)=Pr(X=k)=\frac{\lambda^k e^{-\lambda}}{k!}\] A remark is
-  that the \textbf{mean} and variance form the Posson distribution is
-  equal to a constant \(\lambda\).
+  Poisson pdf is defined as:
+  \[f(k,\lambda)=Pr(X=k)=\frac{\lambda^k e^{-\lambda}}{k!}\] Keep in
+  mind that the \textbf{mean} and variance of the Posson distribution
+  are equal to the constant \(\lambda\).
 \item
   The \textbf{mean} can be expressed as a linear combination of the
   parameters.
   \[ \mu = E[y] = E[e^{y}] = E(y| \boldsymbol{X})=e^{\theta^{\prime} \boldsymbol{X}}=e^{\theta_0 + \theta_1 x_{i1}+ ... + \theta_k x_{ik} }\]
-  Combining condition \((2)\) and \((3)\), we obtain that the
-  probability mass function is given by:
+  Combining condition \((2)\) and \((3)\), we obtain the probability
+  density function:
 \end{enumerate}
 
 \[f(y_i,\lambda)=f(y_i,\mu)=\frac{\mu^y_i e^{-\mu}}{y_i!}\]
 
-The joint probability mass function is the equal to:
+The joint probability density function is hence equal to:
 
 \[f(\boldsymbol{Y}|\boldsymbol{X},\boldsymbol{\theta})=f(y_1,\mu) f(y_2,\mu)...f(y_n,\mu)    = \prod_{i=1}^n f(y_i,\mu|\boldsymbol{X},\boldsymbol{\theta})\]
 
@@ -1591,10 +1575,10 @@ likelihood given a parameter \(\theta\).
 \[\mathcal{L}(\boldsymbol{\theta} | \boldsymbol{Y},\boldsymbol{X}) = \prod_{i=1}^n f(\boldsymbol{\theta}|\boldsymbol{X},\boldsymbol{Y}) = \prod_{i=1}^n \frac{\mu_i^{y_i} e^{-\mu_i}}{y_i!}\]
 
 Finding the \(\boldsymbol{\hat{\theta}}\) that maximizes the likelihood
-function retrieves the estimation parameters. Before doing so we are
-going to use a monotonic transformation and take use as objective
-function the log-likelihhod of the function. Why? Think about
-derivatives of sums vs.~derivatives of products.
+function therefore boils down to estimate the model parameters. Before
+this step we monotically transform the obective function to feed the
+algorithm the log-likelihood instead of the function itself. Why? Think
+about derivatives of sums vs.~derivatives of products.
 \[\boldsymbol{\hat{\theta}} = \max_{\boldsymbol{\theta}} log( \mathcal{L}(\boldsymbol{\theta} | \boldsymbol{Y},\boldsymbol{X})) = \min _{\boldsymbol{\theta}} - log( \mathcal{L}(\boldsymbol{\theta} | \boldsymbol{Y},\boldsymbol{X})) \]
 Taking the logarithm then we have:
 
@@ -1606,56 +1590,53 @@ Taking the logarithm then we have:
 \end{aligned}
 \end{equation}
 
-Where,
+Where
 
 \[ \mu = e^{\theta^{\prime} \boldsymbol{X}}=e^{\theta_0 + \theta_1 x_{i1}+ ... + \theta_k x_{ik} }\].
 
-Given that we can not find a solution using algebra, we are going to use
-the optimzer from the statistical software to maximize the
-log-likelihood function above derived. To do so we are going to use the
-\emph{optim} function from R. After going into the help vignette
-\texttt{?optim}, we realize we are going to need:
+Absent a closed-form solution, we are going to use the R optimizer to
+maximize the log-likelihood function above. The \emph{optim} function
+will serve this purpose. According to the help vignette \texttt{?optim},
+we need:
 
 \begin{itemize}
-\tightlist
 \item
-  A vector of initial values
+  A vector of initial values to start the search from.
 \item
-  The \textbf{function} to be \textbf{minimized}, that receives as
-  \textbf{input the vector of parameters} and \textbf{should return a
-  scalar} so it can be optimized.
+  A well specified \textbf{function} to \textbf{minimize}. It must take
+  as \emph{input} \textbf{the vector of parameters} and \emph{should}
+  \textbf{return a scalar}.
 \item
-  \emph{Method} of optimization (?)
+  \emph{Method} of optimization (?).
 \item
-  Optional hessian (boolean). Given that we need to calculate the
-  variance covariance matrix to estimate the standard errors of he
-  parameters it's going to come in handy the resulted Heassian.
+  Optional: a hessian (boolean). We will use this to parse out the
+  standard errors around the estimated parameters, so it will be useful
+  later on.
 \end{itemize}
 
-Last tutorial we introduce the elements of a function, and the structure
-to define a funcion in R. In this tutorial we just recall as good
-practice that we are going to differenciate the inpus of the function:
-the parameters are the inputs that each timeare going to change in the
-optimization process, while the data for example will be a
-\textbf{static} kind of input. Another static input that we are going to
-use is the \emph{formula}, a type of R object which will allow us to
-extract the relevant information of he name of the variables, the
-columns, and the relationship between the variables (dependent or
-independent, interactions, dependance,\ldots{}).
+In the last installment we introduced the basics of custom functions in
+R. In this tutorial we just recall as good practice that we are going to
+differenciate the inputs of the function: the parameters are the inputs
+that are going to change in the optimization process, while the data for
+example will be a \textbf{static} input. Another static input is the
+\emph{formula}, a type of R object that will allow to extract the
+relevant information such as variables name, data columns, and instructs
+the algorithm on the relationship between variables (dependent or
+independent, interactions, dependance, etc).
 
 We start by writing the function. We call the function \emph{`LLcalc'},
-and define the inputs in the parentesis. One usefull function that we
-use in the first line is \texttt{model.matrix()}. This function takes a
-formula and provide the matrix that we are using in the regression,
-including the vector of ones of the intercept, the dummy variables, and
-the interactions.
+and define the inputs in parentheses. One useful function that we use in
+the first line is \texttt{model.matrix()}. This function takes a formula
+and extract from the whole dataset the related matrix of observations
+including the vector of ones of the intercept, dummies, and interaction
+terms.
 
-We are going to calculate the value of \(\mu\), and then the value of
-the individual contribution to the log-likelihood. After that we just
-sum and put a negative, since the optimizer minimizes by default. There
-is one technical detail that we are adressing using the package
-\texttt{Rmpfr}, which allow to store big in 128 bits (as the factorail
-of 400) \citep{R-Rmpfr}.
+We are going to compute the value of \(\mu\) and then the value of the
+individual contribution to the log-likelihood. Then, we just sum and
+flip sign, as the optimizer minimizes by default. There is one technical
+detail that we are addressing using the package \texttt{Rmpfr}, which
+allow to store big numbers in 128 bits (as the factorail of 400)
+\citep{R-Rmpfr}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1680,7 +1661,7 @@ of 400) \citep{R-Rmpfr}.
 \end{Highlighting}
 \end{Shaded}
 
-In order to test the function we are going to test it with the data, a
+To check whether the function works properly we feed it the data, a
 random \(\theta\), and the formula of the first column of table I in the
 paper.
 
@@ -1696,9 +1677,9 @@ paper.
 ## [1] 26030.13
 \end{verbatim}
 
-Now that we know is working is time to set up the optimizer. As we
-discuss before we need the function, some starting parameters, and the
-data and the formula which are the static inputs of our function.
+Now that we know is working, it is time to set up the optimizer. As
+discussed before we need the function, some starting parameters, the
+data and the formula, the static inputs of our function.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1712,30 +1693,35 @@ data and the formula which are the static inputs of our function.
 ## [1] -29.052   1.084   1.171   0.006
 \end{verbatim}
 
-In order to complete the estimation we need calculate the standard
-errors. Since we have the Hessian, from we theory of the course we know
-that we can recover the Standard Errors, because:
+To carry out the estimation we need to compute the standard errors. As a
+by-product, we also have the Hessian, this is useful in couple with the
+theory from the main class:
 
 \begin{itemize}
 \tightlist
 \item
-  The negative of the hessian (provided as a linearization arround the
+  The negative of the hessian (provided as a linearization around the
   optimum of the LL maximization) is equal to the Fisher information
   matrix.
 \end{itemize}
 
-\[[\mathcal{I}(\theta)]_{i,j}= \mathbf{E}\left[\left(\frac{\partial}{\partial \theta_i} \log f(X|\theta)\right)\left(\frac{\partial}{\partial \theta_j} \log f(X|\theta)\right)|\theta\right]=\left[\frac{\partial^2}{\partial \theta_i \partial \theta_j} \log f(X|\theta)|\theta\right]\]
-- The Fisher information matrix, when inverted is equal to the variance
-covariance matrix. (Actually, formally what Cramer Rao states is that
-the inverse is the lower bound of the variance if the estimator is
-unbiased.) - The variance covariance matrix has in the diagonal the
-variane for each parameter. Taking square root of it is going to give
-the standard errors. - Given that we minimize we dont have to multiply
-by -1, since the values of the LL are calculated over the negative
-likelihhod function.
+\[[\mathcal{I}(\theta)]_{i,j}= \mathbf{E}\left[\left(\frac{\partial}{\partial \theta_i} \log f(X|\theta)\right)\left(\frac{\partial}{\partial \theta_j} \log f(X|\theta)\right)|\theta\right]\approx\left[\frac{\partial^2}{\partial \theta_i \partial \theta_j} \log f(X|\theta)|\theta\right]\]
 
-Taking in consideration these notions we the following standard errors
-that are equal to the previous regression.
+\begin{itemize}
+\item
+  The Fisher information matrix, when inverted, is equal to the variance
+  covariance matrix. (Formally, Cramer-Rao state that the inverse is the
+  lower bound of the variance if the estimator is unbiased.)
+\item
+  The variance covariance matrix has in the diagonal the variane for
+  each parameter. Taking square root of it gives the standard errors.
+\item
+  since we minimize we do not have to flip sign, as the values of the LL
+  are calculated over the negative likelihood function.
+\end{itemize}
+
+Considering these notions we obtain the following standard errors that
+are equal to the previous regression.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1751,9 +1737,9 @@ that are equal to the previous regression.
 \end{verbatim}
 
 To complete the exercise we are going to reproduce the whole table 1
-form the paper. For that we set up all the formulas (models) estimated.
-The paer provide the robust herrors, so we calculate them and we put
-them in the stargazer \citep{R-stargazer} output.
+from the paper. We need to set up all of the formulas (models)
+estimated. The paper provides the robust errors, so we calculate them
+and format with stargazer \citep{R-stargazer} output.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1781,8 +1767,8 @@ them in the stargazer \citep{R-stargazer} output.
 \end{Shaded}
 
 \% Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard
-University. E-mail: hlavac at fas.harvard.edu \% Date and time: Sun, Oct
-06, 2019 - 23:01:26
+University. E-mail: hlavac at fas.harvard.edu \% Date and time: Mon, Oct
+07, 2019 - 18:13:54
 
 \begin{table}[!htbp] \centering 
   \caption{Table 1 - Poisson regression} 
@@ -1838,38 +1824,37 @@ Akaike Inf. Crit. & 885.079 & 533.461 & 530.049 & 379.322 \\
 \section{Example II - Structural
 estimation}\label{example-ii---structural-estimation}
 
-In this section the goal is to estimate the parameters from likelihood
-function of a given model, and be able to calculate it in the
-statistical software (in this case we are using R). We are going to
-estimate the structural parameters of a very simple search model
+In this section the aim is to estimate the parameters from the
+likelihood function of a given model and be able to calculate it in the
+statistical software (in this case, R). We are going to estimate the
+structural parameters of a very simple search model
 \citep{flinn1982new}, following
 \href{https://pdfs.semanticscholar.org/d55e/6da87f3d2e328987b44fd5462114adda6ec6.pdf}{Flinn
 and Heckman 1982}. This tutorial is not devoted to understanding such
-labor model, so we are going to describe the the model and its
-assumptions; from that point we are going to derivate the ML function.
-Then we are going to pass that function to the computer as in the
-previous case, and maximize it to find the parameters of the model.
+labor model, so we are going to describe the model and its assumptions;
+from that point we are going to derive the ML function. Then we are
+going to feed that function to the computer as in the previous case and
+maximize it to find the parameters of the model.
 
 \subsubsection{The model:}\label{the-model}
 
-Agents are well behaved, and try to maximize it's utility maximizing the
-income they receive. When they are in unemployment, they face a cost
-\(c\) for searching. When they face it, offers from a \textbf{Poisson
-process} will arrive. The arrival offer rate is denoted by \(\lambda\),
-and it's probability by unit of time is also \(\lambda\). When they meet
-a \textbf{wage} is proposed from a \textbf{log-normal distribution} and
-the individuals can refuse to form the match or `seal the deal'. Another
-assumption is that the \emph{length of the employment spells} follow a
-\textbf{exponential distribution}, and there is a \textbf{constant risk
-of loosing the job} at a rate \(\eta\). Time is discounted at a rate
-\(\rho\).
+Agents are well behaved and maximize the income they receive. When they
+are unemployed, they face a searching cost \(c\). Upon paying such cost,
+offers from a \textbf{Poisson process} will arrive. The arrival offer
+rate is denoted by \(\lambda\), and its probability by unit of time is
+also \(\lambda\). When they meet a \textbf{wage} is proposed from a
+\textbf{log-normal distribution} and the individuals can refuse to form
+the match or `seal the deal'. We also assume that the \emph{length of
+the employment spells} follow a \textbf{exponential distribution} and
+that there is a \textbf{constant risk of loosing the job} with period
+probability \(\eta\). Time is discounted at a rate \(\rho\).
 
-Such model is characterized by two bellman equations. The first equation
-is the \textbf{value of being employed} {[}qe. (3.2) of the paper{]}:
+Such model is characterized by two Bellman equations. The first equation
+is the \textbf{value of being employed} {[}eq. (3.2) of the paper{]}:
 
 \[ V_e(w) =  \frac{1}{\rho}[w + (1-\eta)V_e + \eta V_u]\]
 
-Which reorganizing terms is equal to:
+Reorganizing terms boils down to:
 
 \[V_e(w) = \frac{1}{\rho + \eta}[w + \eta V_u ]\]
 
@@ -1877,30 +1862,30 @@ The second equation is the \textbf{value of being unemployed}:
 
 \[V_u = \frac{1}{\rho}[c+(1-\lambda)V_u+ \lambda + \mathbf{E} \max \lbrace V_e, V_u \rbrace]\]
 
-Which, after rearranging is equal to:
+Which, after rearranging, is equal to:
 
 \[\rho V_u = -c + \frac{\lambda}{\rho + \eta} \int_{\rho V_u}(w-\rho V_u)f(w)\]
 
 These two equations describe the whole behaviour of the economy under
 the assumptions of the model. Now let's list all the assumptions that we
-have untill now, since they are going to be usefull for the construction
-of the likelihhod function:
+have until now, since they are going to be usefull for the construction
+of the likelihood function:
 
 \begin{itemize}
 \item
-  From the model we have that the minimum accepted wage is equal to
-  \(w^* = \rho V_u\). In the paper the minimum accepted wage is not
-  estimated, but instead is taken from the data.
+  The minimum accepted wage is equal to \(w^* = \rho V_u\). In the paper
+  the minimum accepted wage is not estimated, but instead is taken from
+  the data.
 \item
   Arrival rate of offers: \(\lambda\).
 \item
   Termination rate: \(\eta\)
 \item
-  Distribution of employment duration. \(f[t_e]= \eta e^{(-\eta t_e)}\);
+  Distribution of employment duration: \(f[t_e]= \eta e^{(-\eta t_e)}\);
   the average duration is then \(\mathbf{E}[t_e]= \eta^{-1}\).
 \item
   Rate of leaving the unemployed is equal to: \(\lambda (1- F(w^*))\).
-  We aare going to call this \(h_u\)
+  We are going to call this \(h_u\)
 \item
   Distribution of unemployment duration is exponential
   \(f[t_u]= h_u e^{-h_u t_u)}\). The expected value in unemployment then
@@ -1911,23 +1896,23 @@ of the likelihhod function:
   distribution since a proper distribution must integrate to 1 and our
   is left censored.
 \item
-  The distribution of employments spells is right censored. Given that
-  is negative exponential it coincide with the population.
+  The distribution of employments spells is right-censored. Given that
+  it is negative exponential it coincides with the population.
 \end{itemize}
 
-Given all this information we can proceed to calculate the probability
-to sample an employed individual, and the probability to sample an
-unemployed individual. Let's start first by the probability of sample an
-unemployed indivdual:
+Considering all this information, we can proceed to calculate the
+probability to sample an employed individual out of the population as
+weel as the probability to sample an unemployed individual. Let's start
+with the latter:
 
 \[P(U)=\frac{\mathbf{E}[t_u]}{\mathbf{E}[t_u]+\mathbf{E}[t_e]}=\frac{h_u^{-1}}{h_u^{-1}+\eta^{-1}}=\frac{\eta}{h_u+\eta}\]
-Now let's state the probability of sample and employed individual:
+Now let's derive the probability of sampling an employed individual:
 
 \[P(E)=\frac{\mathbf{E}[t_e]}{\mathbf{E}[t_u]+\mathbf{E}[t_e]}=\frac{\eta^{-1}}{h_u^{-1}+\eta^{-1}}=\frac{h_u}{h_u+\eta}\]
 
-Given that we have normally data on the duration of unemployment
-\(t_u^o\) and the wages \(w^o\) observed from census or surveys, we can
-calculate such parameters because now we can define the likelihood:
+Usually, data on the duration of unemployment \(t_u^o\) and the wages
+\(w^o\) are observed from census or surveys, hence we can calculate such
+parameters because now we can define the likelihood:
 
 \begin{equation}
 \begin{aligned}
@@ -1939,35 +1924,35 @@ calculate such parameters because now we can define the likelihood:
 \end{aligned}
 \end{equation}
 
-After taking logs and rearranging terms we arrive to the following
+After taking logs and rearranging we obtain the following
 \textbf{log-likelihood}:
 
 \[\log \mathcal{L} = N \log(h_u) - h_u \sum t_u + N_u \log(\eta) + \sum f(w|\mu,\sigma) -  N_e \log(1-F(w^*))  - N_e \log(h_u + \eta)\]
 
-We just need to put this function into the optimizer with some data and
-we can obtain the parameters of the model. Before continuing to
-implement the likelihood function in R we are going to make a sop and
-gather some data to estimate our model.
+We just need to feed this function to the optimizer with some data and
+we can obtain the parameters of the model. Before carrying out the
+liklihood estimation, we have a look at the data and try to parse out
+some useful extra information.
 
 \subsubsection{The Data}\label{the-data}
 
-In order to estimate the model we just need two vectors of data:
-duration of unemployment for the unemployed and hourly wages for the
-employed. To make a real example we are going to use the Current
-population survey (CSP), but look that most of the household surveys
-contain these kind of data (i.e.~colombian GEIH).
+To estimate the model we just need two vectors of data: duration of
+unemployment and hourly wages. To make a real example we are going to
+use the Current population survey (CSP), but most of the household
+surveys contain these kind of data (eg, colombian GEIH).
 
 First we go to the \href{http://www.census.gov/cps/}{page of the CPS},
 and learn about the nature of the data. We can also download the
 historical monthly data from the
 \href{https://data.nber.org/data/cps_basic.html}{NBER webpage}. For this
-exercise we are going to use the January 2019 data, that can be optained
-following \href{https://data.nber.org/cps-basic/jan19pub.zip}{this
-link}. Download and unzip the dataset in your working directory. Take
-also a moment to check the required variables, looking the
+exercise we are going to use the January 2019 data, which can be
+obtained following
+\href{https://data.nber.org/cps-basic/jan19pub.zip}{this link}. Download
+and unzip the dataset in your working directory. Take also a moment to
+check the required variables, looking the
 \href{https://data.nber.org/cps-basic/January_2017_Record_Layout.txt}{documentation
 for the data}. The open the dataset using the functionality of the
-reader package \citep{R-readr}.
+\texttt{reader} package \citep{R-readr}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1975,13 +1960,12 @@ reader package \citep{R-readr}.
 \end{Highlighting}
 \end{Shaded}
 
-As you will see the data only contains 1 vector of text. Each row is a
-long sring of text. If you took the time of reading the documentation
-you will see that you can fin next to each variable the description and
-the location of the specific data in such long string. After reading the
-documentation we identify that in order to have a correct vector of
-wages for the employed and a correct vector of duration of the
-unemployed we are going to need the following information:
+As you see, the data only contain 1 vector of text -- in jargon,
+observations are in long format. Each row is a long string of text. If
+you took the time to read the documentation you will see that you can
+find next to each variable the description and the location of the
+specific information in such long string. To extract information about
+unemployment duration and employment wages we need the following parts:
 
 \begin{longtable}[]{@{}lllll@{}}
 \toprule
@@ -2008,12 +1992,12 @@ ALL & GESTFIPS & 2 & FEDERAL INFORMATION STATE & 93 - 94\tabularnewline
 \bottomrule
 \end{longtable}
 
-After identifying this information we proceed to filter the information
-which is necessary. In order to do so we are going to create a database
-for the employed and a database for the unemployed given that the
-identification involves different infromation and variables. Let's begin
-with employed: we create a \emph{`data.frame'} containing the relevant
-colums and we extract the information by the position in the string.
+After identifying this information we can filter the data. To do so we
+create a database for the employed and a database for the unemployed,
+since the identification requires different information and variables.
+Let's begin with the employed: we create a \emph{`data.frame'}
+containing the relevant colums and we extract the information by the
+position in the string.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2041,14 +2025,14 @@ colums and we extract the information by the position in the string.
 
 Reading the documentation we identify that the invalid cases are coded
 \(0\) or negative values \(-1,-2,\dots\). We reclassify this coded
-infromation as \texttt{NA}, a \emph{not available} or \emph{missing}
-value. We are going to keep the observations that are from the outgoing
+infromation as \texttt{NA}, a \emph{not available} or \emph{missing
+value}. We are going to keep the observations that are from the outgoing
 rotations (have earnings information). After that we are going to filter
-the valid hourly waes and convert the weekkly waes to hours using the
-number of hours. We are going to keep only the people that has this
+the valid hourly wages and convert the weekkly wages to hours using the
+number of hours. We are going to keep only the people that have this
 information. We are also going to take the right number of decimal for
-the variables which specify it. We are going to keep only the
-observations that are above the legal federal minimum wage of \(7,5\)
+the variables that specify it. We are going to keep only the
+observations that are above the legal federal minimum wage of \(7.5\)
 USD, and we are going to trim the data at the percentile 99.9\%.
 
 \begin{Shaded}
@@ -2079,10 +2063,10 @@ USD, and we are going to trim the data at the percentile 99.9\%.
 \end{Highlighting}
 \end{Shaded}
 
-Now we proceed to do the same for the unemployed: We collect the
+Now we apply the same selection to the unemployed: We collect the
 infromation in each variable following the position. We take the people
-that the labor employment status is unemployment and that has
-information on the duration. Then we convert the information to montly
+for which the labor employment status is unemployment and that have
+information on the duration. Then we convert the information to monthly
 data.
 
 \begin{Shaded}
@@ -2105,7 +2089,7 @@ data.
 \end{Highlighting}
 \end{Shaded}
 
-We the attach the two data frames:
+As a final step, we merge the two dataset:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2113,9 +2097,9 @@ We the attach the two data frames:
 \end{Highlighting}
 \end{Shaded}
 
-We are going to select and calculate the MLE using only each state. For
-this exercise we are going to use the information on Nevada
-(\(GESTFIPS = 32\))
+We are going to select and calculate the MLE using only one state, as
+minimum wages laws vary locally. For this exercise we are going to use
+the information on Nevada (\(GESTFIPS = 32\))
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2125,13 +2109,13 @@ this exercise we are going to use the information on Nevada
 
 \subsubsection{Estimation}\label{estimation-1}
 
-In order to estimate the identified log likelihood we are going to code
-two auxiliary funcions that appear all the time in the procedure. The
-first one is the
+In order to estimate the log likelihood we are going to code two
+auxiliary funcions that appear all the time in the procedure. The first
+one is the
 \href{https://en.wikipedia.org/wiki/Log-normal_distribution}{log-normal
 density function}:
 
-\[\phi \left( \frac{\log(x) - \mu}{\sigma} \right)(\frac{1}{x \sigma})\]
+\[LN \left(x; \mu, \sigma\right) = \phi \left( \frac{\log(x) - \mu}{\sigma} \right)(\frac{1}{x \sigma})\]
 Where \(\phi\) is the probability density function of the \(N(0,1)\)
 distribution.
 
@@ -2144,10 +2128,10 @@ distribution.
 \end{Highlighting}
 \end{Shaded}
 
-The second function is the \emph{survival function}, which is the value
-of the probability to be over the minimum accepted wage given a
+The second function is the \emph{survival function}, which is the
+probability to be over the minimum accepted wage for a given
 distribution. We define the survival as \((1- F(w^*))\). The cumulative
-distribution function of the log-normal is equalt to:
+distribution function of the log-normal is equal to:
 
 \[\Phi \left( \frac{\log(x) - \mu}{\sigma} \right)\] Where \(\Phi\) is
 the cumulative distribution function of the standard normal
@@ -2162,33 +2146,31 @@ distribution.
 \end{Highlighting}
 \end{Shaded}
 
-There are other functions already developed that are suitable for this
-kind of problems. One xample is the \texttt{mle2} function from the
-\emph{`bbmle'} package \citep{R-bbmle}. This is useful since the
-function deals with standard errors and provide other information that
-might be usefull. There are some difference between the \texttt{optim()}
-method already covered and the \texttt{mle2()} function. This function
-requires:
+There are other built-in functions already developed that are suitable
+for this kind of problems. One xample is the \texttt{mle2} function from
+the \emph{`bbmle'} package \citep{R-bbmle}. This is useful since the
+function deals with standard errors and provides other information that
+might be useful. There are some difference between the \texttt{optim()}
+method already covered and the \texttt{mle2()} function. This latter
+function requires:
 
 \begin{itemize}
 \item
   Function to calculate negative log-likelihood
 \item
-  A start list for the optimizer
+  Starting values for the optimizer
 \item
   The optimizer used
 \item
-  Given that we are going to introcue the data as an input of the
-  function, we need the data
+  The data
 \end{itemize}
 
-Now we are going to code the log-likelihood function we had recovered
-using the same procedure as in the previous example:
+Now we are going to code the log-likelihood function we recovered using
+the same procedure as in the previous example:
 
-First we are going to code each of the parameters as an input in the
-function so the function can recognize it, and as mentioned earlier also
-the data. Then we are going to write the likelihood using the definition
-derived earlier.
+First we are going to code each of the parameters and the data as inputs
+in the function. Then we are going to code the likelihood using the
+definition derived earlier.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2222,7 +2204,7 @@ derived earlier.
 \end{Highlighting}
 \end{Shaded}
 
-After that we just have to set up the maximizer and maximize the
+After that we just have to set up the maximizer and feed it the
 function:
 
 \begin{Shaded}
@@ -2244,10 +2226,10 @@ function:
 ## -0.4541099 -1.8175680  2.7146674 -0.4361533
 \end{verbatim}
 
-All the coeficients need to be transformed so we recover them and
-present the results. But before that we are going to calculate the
-standard error using the delta method and the information from the
-hessian. At the end what we are doing is just rescaling the errors.
+All the coeficients need to be transformed to recover and present the
+results. Before that we are going to calculate the standard errors using
+the delta method and the information from the hessian. At the end what
+we are doing is just rescaling the errors.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2273,8 +2255,8 @@ hessian. At the end what we are doing is just rescaling the errors.
 \end{Shaded}
 
 \% Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard
-University. E-mail: hlavac at fas.harvard.edu \% Date and time: Sun, Oct
-06, 2019 - 23:02:01
+University. E-mail: hlavac at fas.harvard.edu \% Date and time: Mon, Oct
+07, 2019 - 18:14:29
 
 \begin{table}[!htbp] \centering 
   \caption{Model parameters MLE - Nevada (Jan 2019)} 

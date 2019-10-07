@@ -1910,13 +1910,13 @@ reg_exp &lt;-<span class="st"> </span><span class="kw">rq</span>(formula_qr,<spa
 time_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">Sys.time</span>()
 
 <span class="kw">paste0</span>(<span class="st">&quot;Computing the quantiles took &quot;</span>,time_<span class="dv">1</span><span class="op">-</span>time_<span class="dv">0</span>)</code></pre></div>
-<pre><code>## [1] &quot;Computing the quantiles took 33.1726651191711&quot;</code></pre>
+<pre><code>## [1] &quot;Computing the quantiles took 31.7056322097778&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sum_reg &lt;-<span class="st"> </span><span class="kw">summary.rqs</span>(reg_exp, <span class="dt">method =</span> <span class="st">&#39;boot&#39;</span>)</code></pre></div>
 <pre><code>## Warning in summary.rq(xi, U = U, ...): 98 non-positive fis</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">time_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">Sys.time</span>()
 
 <span class="kw">paste0</span>(<span class="st">&quot;Computing the errors took &quot;</span>,time_<span class="dv">2</span><span class="op">-</span>time_<span class="dv">1</span>)</code></pre></div>
-<pre><code>## [1] &quot;Computing the errors took 1.26933179696401&quot;</code></pre>
+<pre><code>## [1] &quot;Computing the errors took 1.14414404630661&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(sum_reg, <span class="dt">parm =</span> <span class="kw">c</span>(<span class="dv">2</span>))</code></pre></div>
 <p><img src="Material_files/figure-html/unnamed-chunk-25-1.png" width="672" /></p>
 <p>The plot shows the estimates values, the confidence intervals and the OLS estimated value, so we can compare if the QR offers additional insights.</p>

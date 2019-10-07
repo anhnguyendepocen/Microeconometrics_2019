@@ -168,22 +168,22 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p><img src="images/1200px-Logo_pse_petit.png" width="90%" style="display: block; margin: auto;" /></p>
 <div id="introduction-1" class="section level2">
 <h2><span class="header-section-number">3.1</span> Introduction</h2>
-<p>In this second session of the microeconometrics tutorial we are going to use R and it`s functionality to do maximum likelihood estimation. The task that we are going to complete in this section are:</p>
+<p>In this second session of the microeconometrics tutorial we are going to implement Maximum Likelihood Estimation in R. The essential steps are:</p>
 <ol style="list-style-type: decimal">
-<li><p>Understand the intuition behind Maximum likelihood estimation. We are going to replicate a Poisson regression table (REF) using MLE. Estimates are performed using a programmed function and a build-in function.</p></li>
-<li><p>Propose a model and derive the likelihood function from it. This part is not going to be very deep in the explanation of the model, derivation and assumptions. The aim of this sessions are on the estimation (computation) and not in the model per se. I will however referentiate the sources if you want to have a deeper look at the model. Given that the last session we did something on health economics, this time we change topic and will focus on labour economics. As anecdote, when I first saw this I was very impressed! I hope you are impressed too after today session!</p></li>
-<li><p>Use the Current Population Survey (CPS) and understand how to handle and manage this particular data set.</p>
+<li><p>Understand the intuition behind Maximum likelihood estimation. We awill replicate a Poisson regression table using MLE. We will both write our own custom function and a built-in one.</p></li>
+<li><p>Propose a model and derive its likelihood function. This part is not going to be very deep in the explanation of the model, derivation and assumptions. The aim of this sessions are on the estimation (computation) and not in the model per se. I will however refer the sources if you want to have a deeper look at the model. Given that the last session we did something on health economics, this time we change topic and will focus on labour economics. As anecdote, when I first saw this I was very impressed! I hope you are impressed too after today session!</p></li>
+<li><p>Use the Current Population Survey (CPS) and understand how to handle and manage this particular dataset.</p>
 <pre><code>+ Import the data
 + Use the specified columns
 + Clean data</code></pre></li>
-<li><p>Estimate the structural parameters of the proposed model (both for the estimates and the standard errors, estimated using the <em>delta method</em>).</p></li>
+<li><p>Estimate the structural parameters of the proposed model (both for the estimates and the standard errors, obtaind via the <em>delta method</em>).</p></li>
 </ol>
 </div>
 <div id="maximum-likelihood-estimator" class="section level2">
 <h2><span class="header-section-number">3.2</span> Maximum likelihood estimator</h2>
-<p>For the theory please check the slides of the course (class 2). Here we provide just a brief definition and the intuition on the application of the method. What is Maximum likelihood estimation (MLE)? MLE is a method of estimation in which we obtain the <em>parameters</em> of our model under an <strong>assumed</strong> <em>statistical model</em> and the available <em>data</em>, such that our sample is the most probable.</p>
+<p>For the theory please refer to the slides of the course (class 2). Here we just provide a brief definition and the intuition to the method application. What is Maximum likelihood estimation (MLE)? MLE is an estimation method in which we obtain the <em>parameters</em> of our model under an <strong>assumed</strong> <em>statistical model</em> and the available <em>data</em>, such that our sample is the most probable.</p>
 <ul>
-<li><p>Given a statistical model (given a model), select the parameters that make the observed data more probable. By so we are doing inference in the population that generated our data. and the DGP behind. We can formulate <strong>any</strong> model and we will obtain a result; the only restriction for the formulation is that it has probability 0.</p></li>
+<li><p>Given a statistical model (ie, an economic model with suitable stochastic features), select the parameters that make the observed data most probable. In this way, we are doing inference in the population that generated our data and the DGP behind. We can formulate <strong>any</strong> model and we will obtain a result; the only restriction for the formulation is that it has probability 0.<!--  questa ultima frase non è super chiara --></p></li>
 <li><p>Even if it is intuitive, rely on the <strong>assumptions</strong> (model, statistical model, DGP), but not in the <strong>validity</strong>.</p></li>
 <li><p>Validity of the models?</p></li>
 </ul>
@@ -193,29 +193,29 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <blockquote>
 <p>An advantage of a structured approach to empirical analysis is that it should be immediately clear what factors have been considered exogenous and which endogenous, the functional form assumptions made, etc.&quot; (C. Flinn, <a href="http://www.econ.nyu.edu/user/flinnc/courses/CCA-RGSE-2019/search_estimation_notes.pdf">lecture notes</a>)</p>
 </blockquote>
-<p>In order to understand how MLE works we are going to make two examples today: Poisson regresson and a structural estimation.</p>
+<p>To understand how MLE works we will use two examples today: a Poisson regression and a structural estimation.</p>
 <div id="poisson-regression" class="section level3">
 <h3><span class="header-section-number">3.2.1</span> Poisson regression</h3>
-<p>In this section we are going to replicate a paper by <a href="https://www.danieltreisman.org/">Daniel Treisman</a> published in AER 2016. that uses the Poisson regression to modelate the number of millioners in a set of countries, given some country characteristics <span class="citation">(Treisman 2016)</span>.</p>
+<p>In this section we are going to replicate a paper by <a href="https://www.danieltreisman.org/">Daniel Treisman</a> published in AER 2016. It applies Poisson regression to the number of millioners in a set of countries, conditional on some country characteristics <span class="citation">(Treisman 2016)</span>.</p>
 <ul>
 <li><strong>What does the paper says?</strong></li>
 </ul>
-<p>The main idea of the paper is <em>provide</em> a robust <em>model</em> from which we can predict the number of rich in a given country, given an economic environment (so called, country characteristics).</p>
-<p>After that is possible to compare the prediction versus the data; the author realizes that and no matter how the model is setted and specified, Russia has the largest number of anomalies (underpredictions).</p>
+<p>The main idea of the paper is <em>provide</em> a robust <em>model</em> to predict the number of rich in a given country, given an economic environment specific to said country.</p>
+<p>In comparing data and predictions the Author finds that, regardless of the model specification, Russia reports the highest number of anomalies (underpredictions).</p>
 <ul>
 <li><strong>Why a Poisson regression?</strong></li>
 </ul>
-<p>In Treisman’s paper, the dependent variable — the number of billionaires <span class="math inline">\(y_i\)</span> in country <span class="math inline">\(i\)</span> — is modeled as a function of GDP per capita, population size, and years membership in GATT and WTO. He present 4 specifications including more variables.</p>
+<p>In Treisman’s paper the dependent variable — the number of billionaires <span class="math inline">\(y_i\)</span> in country <span class="math inline">\(i\)</span> — is modelled as a function of GDP per capita, population size, and years membership in GATT and WTO. He also presents 4 alternative specifications.</p>
 <blockquote>
 <p>“… since the dependent variable is a count, Poisson rather than OLS regression is appropriate.”</p>
 </blockquote>
 <div id="estimation" class="section level4">
 <h4><span class="header-section-number">3.2.1.1</span> Estimation</h4>
-<p>You can acces the <a href="https://www.aeaweb.org/aer/data/10605/P2016_1068_data.zip">data</a> and the <a href="https://pubs.aeaweb.org/doi/pdfplus/10.1257/aer.p20161068">paper</a> in the provided links. Download and unzip the information. The file also contains a companion STATA code to reproduce the tables in the paper. Unzip the information and charge the dataset into R using the <code>haven</code> library <span class="citation">(Wickham and Miller 2018)</span>:</p>
+<p>You can acces the <a href="https://www.aeaweb.org/aer/data/10605/P2016_1068_data.zip">data</a> and the <a href="https://pubs.aeaweb.org/doi/pdfplus/10.1257/aer.p20161068">paper</a> in the provided links. Download and unzip the information. The file also contains a companion STATA code to reproduce the tables in the paper. Unzip the information and load the dataset in R using the <code>haven</code> library <span class="citation">(Wickham and Miller 2018)</span>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_mil &lt;-<span class="st"> </span><span class="kw">read_dta</span>(<span class="st">&quot;YOUR PATH GOES HERE&quot;</span>)</code></pre></div>
-<p>To reproduce table 1 from the paper we need to filter the information for 2008. will only use that info for reproducing the table.</p>
+<p>To reproduce table 1 from the paper we need to filter the information for 2008, as it is the year considered in the main analisys.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_mil  &lt;-<span class="st"> </span>data_mil[data_mil<span class="op">$</span>year <span class="op">==</span><span class="st"> </span><span class="dv">2008</span>,]</code></pre></div>
-<p>Our <strong>goal</strong> is to <strong>estimate a Poisson regression model</strong>, and there are built-in functions to do these kind of estimations using a command like <code>glm(..., family = &quot;poisson&quot;)</code>. Our <strong>goal</strong> instead is to <strong>use Maximum Likelihood estimation to reproduce such parameters</strong> and understand how does this work. In order to have a benchmark for comparison let’s see how the output of the first proposed model looks like:</p>
+<p>Our <strong>goal</strong> is to <strong>estimate a Poisson regression model</strong> and there are built-in functions to do these kind of estimations using a one-line command like <code>glm(..., family = &quot;poisson&quot;)</code>. Our <strong>goal</strong> instead is to <strong>use Maximum Likelihood estimation to reproduce such parameters</strong> and understand how this works. In order to have a benchmark for comparison let’s see how the output of the first proposed model looks like:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(<span class="kw">glm</span>(<span class="dt">formula =</span> numbil0 <span class="op">~</span><span class="st"> </span>lngdppc <span class="op">+</span><span class="st"> </span>lnpop <span class="op">+</span><span class="st"> </span>gattwto08, <span class="dt">family =</span> <span class="kw">poisson</span>(<span class="dt">link=</span><span class="st">&#39;log&#39;</span>), <span class="dt">data =</span> data_mil))</code></pre></div>
 <pre><code>## 
 ## Call:
@@ -243,39 +243,37 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## AIC: 885.08
 ## 
 ## Number of Fisher Scoring iterations: 5</code></pre>
-<p>Let’s start our construction of the maximum likelihood introducing the Poisson regression model. Poisson regression is a generalized linear model form of regression analysis used to model count data <span class="math inline">\((1)\)</span>, in which the dependent variable have a Poisson distribution <span class="math inline">\((2)\)</span>, and the logarithm of the expected value can be modeled as a linear combination <span class="math inline">\((3)\)</span>.</p>
+<p>Let’s start the construction of the maximum likelihood introducing the Poisson regression model. The starting assumptions are: Poisson regression is a generalized linear model form of regression analysis used to model count data <span class="math inline">\((1)\)</span>, in which the dependent variable has a Poisson distribution <span class="math inline">\((2)\)</span>, and the logarithm of the expected value can be modeled as a linear combination <span class="math inline">\((3)\)</span>. <!-- linear combination di cosa? --></p>
 <ol style="list-style-type: decimal">
-<li>Count data: remark that all the numbers from a Poisson distribution are integers.</li>
-<li>Poisson distribution is defined as: <span class="math display">\[f(k,\lambda)=Pr(X=k)=\frac{\lambda^k e^{-\lambda}}{k!}\]</span> A remark is that the <strong>mean</strong> and variance form the Posson distribution is equal to a constant <span class="math inline">\(\lambda\)</span>.</li>
-<li>The <strong>mean</strong> can be expressed as a linear combination of the parameters. <span class="math display">\[ \mu = E[y] = E[e^{y}] = E(y| \boldsymbol{X})=e^{\theta^{\prime} \boldsymbol{X}}=e^{\theta_0 + \theta_1 x_{i1}+ ... + \theta_k x_{ik} }\]</span> Combining condition <span class="math inline">\((2)\)</span> and <span class="math inline">\((3)\)</span>, we obtain that the probability mass function is given by:</li>
+<li>Count data: notice that all the numbers from a Poisson distribution are integers.</li>
+<li>Poisson pdf is defined as: <span class="math display">\[f(k,\lambda)=Pr(X=k)=\frac{\lambda^k e^{-\lambda}}{k!}\]</span> Keep in mind that the <strong>mean</strong> and variance of the Posson distribution are equal to the constant <span class="math inline">\(\lambda\)</span>.</li>
+<li>The <strong>mean</strong> can be expressed as a linear combination of the parameters. <span class="math display">\[ \mu = E[y] = E[e^{y}] = E(y| \boldsymbol{X})=e^{\theta^{\prime} \boldsymbol{X}}=e^{\theta_0 + \theta_1 x_{i1}+ ... + \theta_k x_{ik} }\]</span> Combining condition <span class="math inline">\((2)\)</span> and <span class="math inline">\((3)\)</span>, we obtain the probability density function:</li>
 </ol>
 <p><span class="math display">\[f(y_i,\lambda)=f(y_i,\mu)=\frac{\mu^y_i e^{-\mu}}{y_i!}\]</span></p>
-<p>The joint probability mass function is the equal to:</p>
+<p>The joint probability density function is hence equal to:</p>
 <p><span class="math display">\[f(\boldsymbol{Y}|\boldsymbol{X},\boldsymbol{\theta})=f(y_1,\mu) f(y_2,\mu)...f(y_n,\mu)    = \prod_{i=1}^n f(y_i,\mu|\boldsymbol{X},\boldsymbol{\theta})\]</span></p>
 <p>Our likelihood function instead takes as given the data (vector <span class="math inline">\(\boldsymbol{Y}\)</span> and matrix <span class="math inline">\(\boldsymbol{X}\)</span>) and calculates the likelihood given a parameter <span class="math inline">\(\theta\)</span>.</p>
 <p><span class="math display">\[\mathcal{L}(\boldsymbol{\theta} | \boldsymbol{Y},\boldsymbol{X}) = \prod_{i=1}^n f(\boldsymbol{\theta}|\boldsymbol{X},\boldsymbol{Y}) = \prod_{i=1}^n \frac{\mu_i^{y_i} e^{-\mu_i}}{y_i!}\]</span></p>
-<p>Finding the <span class="math inline">\(\boldsymbol{\hat{\theta}}\)</span> that maximizes the likelihood function retrieves the estimation parameters. Before doing so we are going to use a monotonic transformation and take use as objective function the log-likelihhod of the function. Why? Think about derivatives of sums vs. derivatives of products. <span class="math display">\[\boldsymbol{\hat{\theta}} = \max_{\boldsymbol{\theta}} log( \mathcal{L}(\boldsymbol{\theta} | \boldsymbol{Y},\boldsymbol{X})) = \min _{\boldsymbol{\theta}} - log( \mathcal{L}(\boldsymbol{\theta} | \boldsymbol{Y},\boldsymbol{X})) \]</span> Taking the logarithm then we have:</p>
-<p><span class="math display">\[
-\begin{equation}
+<p>Finding the <span class="math inline">\(\boldsymbol{\hat{\theta}}\)</span> that maximizes the likelihood function therefore boils down to estimate the model parameters. Before this step we monotically transform the obective function to feed the algorithm the log-likelihood instead of the function itself. Why? Think about derivatives of sums vs. derivatives of products. <span class="math display">\[\boldsymbol{\hat{\theta}} = \max_{\boldsymbol{\theta}} log( \mathcal{L}(\boldsymbol{\theta} | \boldsymbol{Y},\boldsymbol{X})) = \min _{\boldsymbol{\theta}} - log( \mathcal{L}(\boldsymbol{\theta} | \boldsymbol{Y},\boldsymbol{X})) \]</span> Taking the logarithm then we have:</p>
+<span class="math display">\[\begin{equation}
 \begin{aligned}
  \log( \mathcal{L}(\boldsymbol{\theta} | \boldsymbol{Y},\boldsymbol{X}))  &amp;= \log \left( \prod_{i=1}^N \frac{\mu_i^y e^{-\mu}}{y_i!} \right) \\
  &amp;= \sum_{i=1}^N \log \left( \frac{\mu_i^{y_i} e^{-\mu_i}}{y_i!} \right)\\
  &amp;= \sum_{i=1}^N y_i \log \left(\mu_i \right) - \sum_{i=1}^N \log \left(\mu_i\right) -\sum_{i=1}^N \log \left(y_i! \right)\\
 \end{aligned}
-\end{equation}
-\]</span></p>
-<p>Where,</p>
+\end{equation}\]</span>
+<p>Where</p>
 <p><span class="math display">\[ \mu = e^{\theta^{\prime} \boldsymbol{X}}=e^{\theta_0 + \theta_1 x_{i1}+ ... + \theta_k x_{ik} }\]</span>.</p>
-<p>Given that we can not find a solution using algebra, we are going to use the optimzer from the statistical software to maximize the log-likelihood function above derived. To do so we are going to use the <em>optim</em> function from R. After going into the help vignette <code>?optim</code>, we realize we are going to need:</p>
+<p>Absent a closed-form solution, we are going to use the R optimizer to maximize the log-likelihood function above. The <em>optim</em> function will serve this purpose. According to the help vignette <code>?optim</code>, we need:</p>
 <ul>
-<li>A vector of initial values</li>
-<li>The <strong>function</strong> to be <strong>minimized</strong>, that receives as <strong>input the vector of parameters</strong> and <strong>should return a scalar</strong> so it can be optimized.</li>
-<li><em>Method</em> of optimization (?)</li>
-<li>Optional hessian (boolean). Given that we need to calculate the variance covariance matrix to estimate the standard errors of he parameters it’s going to come in handy the resulted Heassian.</li>
+<li><p>A vector of initial values to start the search from.</p></li>
+<li><p>A well specified <strong>function</strong> to <strong>minimize</strong>. It must take as <em>input</em> <strong>the vector of parameters</strong> and <em>should</em> <strong>return a scalar</strong>.</p></li>
+<li><p><em>Method</em> of optimization (?).</p></li>
+<li><p>Optional: a hessian (boolean). We will use this to parse out the standard errors around the estimated parameters, so it will be useful later on.</p></li>
 </ul>
-<p>Last tutorial we introduce the elements of a function, and the structure to define a funcion in R. In this tutorial we just recall as good practice that we are going to differenciate the inpus of the function: the parameters are the inputs that each timeare going to change in the optimization process, while the data for example will be a <strong>static</strong> kind of input. Another static input that we are going to use is the <em>formula</em>, a type of R object which will allow us to extract the relevant information of he name of the variables, the columns, and the relationship between the variables (dependent or independent, interactions, dependance,…).</p>
-<p>We start by writing the function. We call the function <em>‘LLcalc’</em>, and define the inputs in the parentesis. One usefull function that we use in the first line is <code>model.matrix()</code>. This function takes a formula and provide the matrix that we are using in the regression, including the vector of ones of the intercept, the dummy variables, and the interactions.</p>
-<p>We are going to calculate the value of <span class="math inline">\(\mu\)</span>, and then the value of the individual contribution to the log-likelihood. After that we just sum and put a negative, since the optimizer minimizes by default. There is one technical detail that we are adressing using the package <code>Rmpfr</code>, which allow to store big in 128 bits (as the factorail of 400) <span class="citation">(Maechler 2019)</span>.</p>
+<p>In the last installment we introduced the basics of custom functions in R. In this tutorial we just recall as good practice that we are going to differenciate the inputs of the function: the parameters are the inputs that are going to change in the optimization process, while the data for example will be a <strong>static</strong> input. Another static input is the <em>formula</em>, a type of R object that will allow to extract the relevant information such as variables name, data columns, and instructs the algorithm on the relationship between variables (dependent or independent, interactions, dependance, etc).</p>
+<p>We start by writing the function. We call the function <em>‘LLcalc’</em>, and define the inputs in parentheses. One useful function that we use in the first line is <code>model.matrix()</code>. This function takes a formula and extract from the whole dataset the related matrix of observations including the vector of ones of the intercept, dummies, and interaction terms.</p>
+<p>We are going to compute the value of <span class="math inline">\(\mu\)</span> and then the value of the individual contribution to the log-likelihood. Then, we just sum and flip sign, as the optimizer minimizes by default. There is one technical detail that we are addressing using the package <code>Rmpfr</code>, which allow to store big numbers in 128 bits (as the factorail of 400) <span class="citation">(Maechler 2019)</span>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">LLcalc &lt;-<span class="st"> </span><span class="cf">function</span>(theta, formula, data){
         ### Calculate the log-likelihood of a Poisson regression, 
         ### given a vector of parameters (1), 
@@ -294,28 +292,33 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
         <span class="kw">return</span>(<span class="op">-</span><span class="kw">sum</span>(LL, <span class="dt">na.rm =</span> T))
         
 }</code></pre></div>
-<p>In order to test the function we are going to test it with the data, a random <span class="math inline">\(\theta\)</span>, and the formula of the first column of table I in the paper.</p>
+<p>To check whether the function works properly we feed it the data, a random <span class="math inline">\(\theta\)</span>, and the formula of the first column of table I in the paper.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">theta_test &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">4</span>)
 formula_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">as.formula</span>(numbil0 <span class="op">~</span><span class="st"> </span>lngdppc <span class="op">+</span><span class="st"> </span>lnpop <span class="op">+</span><span class="st"> </span>gattwto08)
 <span class="kw">LLcalc</span>(<span class="dt">theta =</span> theta_test, <span class="dt">formula =</span> formula_<span class="dv">1</span>, <span class="dt">data =</span> data_mil)</code></pre></div>
-<pre><code>## [1] 51011.57</code></pre>
-<p>Now that we know is working is time to set up the optimizer. As we discuss before we need the function, some starting parameters, and the data and the formula which are the static inputs of our function.</p>
+<pre><code>## [1] 26030.13</code></pre>
+<p>Now that we know is working, it is time to set up the optimizer. As discussed before we need the function, some starting parameters, the data and the formula, the static inputs of our function.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">theta_<span class="dv">0</span> &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="op">-</span><span class="dv">30</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">0</span>)
 dTbp_beta &lt;-<span class="st"> </span><span class="kw">optim</span>(<span class="dt">par =</span> theta_<span class="dv">0</span>, <span class="dt">fn =</span> LLcalc, <span class="dt">data =</span> data_mil, <span class="dt">formula =</span> formula_<span class="dv">1</span>, <span class="dt">method =</span> <span class="st">&quot;Nelder-Mead&quot;</span>, <span class="dt">hessian =</span> <span class="ot">TRUE</span>)
 <span class="kw">round</span>(dTbp_beta<span class="op">$</span>par,<span class="dv">3</span>)</code></pre></div>
 <pre><code>## [1] -29.052   1.084   1.171   0.006</code></pre>
-<p>In order to complete the estimation we need calculate the standard errors. Since we have the Hessian, from we theory of the course we know that we can recover the Standard Errors, because:</p>
+<p>To carry out the estimation we need to compute the standard errors. As a by-product, we also have the Hessian, this is useful in couple with the theory from the main class:</p>
 <ul>
-<li>The negative of the hessian (provided as a linearization arround the optimum of the LL maximization) is equal to the Fisher information matrix.</li>
+<li>The negative of the hessian (provided as a linearization around the optimum of the LL maximization) is equal to the Fisher information matrix.</li>
 </ul>
-<p><span class="math display">\[[\mathcal{I}(\theta)]_{i,j}= \mathbf{E}\left[\left(\frac{\partial}{\partial \theta_i} \log f(X|\theta)\right)\left(\frac{\partial}{\partial \theta_j} \log f(X|\theta)\right)|\theta\right]=\left[\frac{\partial^2}{\partial \theta_i \partial \theta_j} \log f(X|\theta)|\theta\right]\]</span> - The Fisher information matrix, when inverted is equal to the variance covariance matrix. (Actually, formally what Cramer Rao states is that the inverse is the lower bound of the variance if the estimator is unbiased.) - The variance covariance matrix has in the diagonal the variane for each parameter. Taking square root of it is going to give the standard errors. - Given that we minimize we dont have to multiply by -1, since the values of the LL are calculated over the negative likelihhod function.</p>
-<p>Taking in consideration these notions we the following standard errors that are equal to the previous regression.</p>
+<p><span class="math display">\[[\mathcal{I}(\theta)]_{i,j}= \mathbf{E}\left[\left(\frac{\partial}{\partial \theta_i} \log f(X|\theta)\right)\left(\frac{\partial}{\partial \theta_j} \log f(X|\theta)\right)|\theta\right]\approx\left[\frac{\partial^2}{\partial \theta_i \partial \theta_j} \log f(X|\theta)|\theta\right]\]</span></p>
+<ul>
+<li><p>The Fisher information matrix, when inverted, is equal to the variance covariance matrix. (Formally, Cramer-Rao state that the inverse is the lower bound of the variance if the estimator is unbiased.)</p></li>
+<li><p>The variance covariance matrix has in the diagonal the variane for each parameter. Taking square root of it gives the standard errors.</p></li>
+<li><p>since we minimize we do not have to flip sign, as the values of the LL are calculated over the negative likelihood function.</p></li>
+</ul>
+<p>Considering these notions we obtain the following standard errors that are equal to the previous regression.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fisher_info &lt;-<span class="st"> </span>dTbp_beta<span class="op">$</span>hessian
 vcov &lt;-<span class="st"> </span><span class="kw">solve</span>(fisher_info)
 se &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(vcov))
 se</code></pre></div>
 <pre><code>## [1] 0.638233253 0.035068731 0.024155062 0.001907374</code></pre>
-<p>To complete the exercise we are going to reproduce the whole table 1 form the paper. For that we set up all the formulas (models) estimated. The paer provide the robust herrors, so we calculate them and we put them in the stargazer <span class="citation">(Hlavac 2018)</span> output.</p>
+<p>To complete the exercise we are going to reproduce the whole table 1 from the paper. We need to set up all of the formulas (models) estimated. The paper provides the robust errors, so we calculate them and format with stargazer <span class="citation">(Hlavac 2018)</span> output.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">formula_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">as.formula</span>(numbil0 <span class="op">~</span><span class="st">  </span>lngdppc <span class="op">+</span><span class="st"> </span>lnpop <span class="op">+</span><span class="st">  </span>gattwto08 <span class="op">+</span><span class="st">  </span>lnmcap08 <span class="op">+</span><span class="st">  </span>rintr <span class="op">+</span><span class="st">  </span>topint08)
 formula_<span class="dv">3</span> &lt;-<span class="st"> </span><span class="kw">as.formula</span>(numbil0 <span class="op">~</span><span class="st">  </span>lngdppc <span class="op">+</span><span class="st"> </span>lnpop <span class="op">+</span><span class="st">  </span>gattwto08 <span class="op">+</span><span class="st">  </span>lnmcap08 <span class="op">+</span><span class="st">  </span>rintr <span class="op">+</span><span class="st">  </span>topint08 <span class="op">+</span><span class="st">  </span>nrrents <span class="op">+</span><span class="st">  </span>roflaw)
 formula_<span class="dv">4</span> &lt;-<span class="st"> </span><span class="kw">as.formula</span>(numbil0 <span class="op">~</span><span class="st">  </span>lngdppc <span class="op">+</span><span class="st"> </span>lnpop <span class="op">+</span><span class="st">  </span>gattwto08 <span class="op">+</span><span class="st">  </span>lnmcap08 <span class="op">+</span><span class="st">  </span>rintr <span class="op">+</span><span class="st">  </span>topint08 <span class="op">+</span><span class="st">  </span>nrrents <span class="op">+</span><span class="st">  </span>roflaw <span class="op">+</span><span class="st">  </span>fullprivproc)
@@ -882,35 +885,34 @@ Akaike Inf. Crit.
 </div>
 <div id="example-ii---structural-estimation" class="section level2">
 <h2><span class="header-section-number">3.3</span> Example II - Structural estimation</h2>
-<p>In this section the goal is to estimate the parameters from likelihood function of a given model, and be able to calculate it in the statistical software (in this case we are using R). We are going to estimate the structural parameters of a very simple search model <span class="citation">(Flinn and Heckman 1982)</span>, following <a href="https://pdfs.semanticscholar.org/d55e/6da87f3d2e328987b44fd5462114adda6ec6.pdf">Flinn and Heckman 1982</a>. This tutorial is not devoted to understanding such labor model, so we are going to describe the the model and its assumptions; from that point we are going to derivate the ML function. Then we are going to pass that function to the computer as in the previous case, and maximize it to find the parameters of the model.</p>
+<p>In this section the aim is to estimate the parameters from the likelihood function of a given model and be able to calculate it in the statistical software (in this case, R). We are going to estimate the structural parameters of a very simple search model <span class="citation">(Flinn and Heckman 1982)</span>, following <a href="https://pdfs.semanticscholar.org/d55e/6da87f3d2e328987b44fd5462114adda6ec6.pdf">Flinn and Heckman 1982</a>. This tutorial is not devoted to understanding such labor model, so we are going to describe the model and its assumptions; from that point we are going to derive the ML function. Then we are going to feed that function to the computer as in the previous case and maximize it to find the parameters of the model.</p>
 <div id="the-model" class="section level4">
 <h4><span class="header-section-number">3.3.0.1</span> The model:</h4>
-<p>Agents are well behaved, and try to maximize it’s utility maximizing the income they receive. When they are in unemployment, they face a cost <span class="math inline">\(c\)</span> for searching. When they face it, offers from a <strong>Poisson process</strong> will arrive. The arrival offer rate is denoted by <span class="math inline">\(\lambda\)</span>, and it’s probability by unit of time is also <span class="math inline">\(\lambda\)</span>. When they meet a <strong>wage</strong> is proposed from a <strong>log-normal distribution</strong> and the individuals can refuse to form the match or ‘seal the deal’. Another assumption is that the <em>length of the employment spells</em> follow a <strong>exponential distribution</strong>, and there is a <strong>constant risk of loosing the job</strong> at a rate <span class="math inline">\(\eta\)</span>. Time is discounted at a rate <span class="math inline">\(\rho\)</span>.</p>
-<p>Such model is characterized by two bellman equations. The first equation is the <strong>value of being employed</strong> [qe. (3.2) of the paper]:</p>
+<p>Agents are well behaved and maximize the income they receive. When they are unemployed, they face a searching cost <span class="math inline">\(c\)</span>. Upon paying such cost, offers from a <strong>Poisson process</strong> will arrive. The arrival offer rate is denoted by <span class="math inline">\(\lambda\)</span>, and its probability by unit of time is also <span class="math inline">\(\lambda\)</span>. When they meet a <strong>wage</strong> is proposed from a <strong>log-normal distribution</strong> and the individuals can refuse to form the match or ‘seal the deal’. We also assume that the <em>length of the employment spells</em> follow a <strong>exponential distribution</strong> and that there is a <strong>constant risk of loosing the job</strong> with period probability <span class="math inline">\(\eta\)</span>. Time is discounted at a rate <span class="math inline">\(\rho\)</span>.</p>
+<p>Such model is characterized by two Bellman equations. The first equation is the <strong>value of being employed</strong> [eq. (3.2) of the paper]:</p>
 <p><span class="math display">\[ V_e(w) =  \frac{1}{\rho}[w + (1-\eta)V_e + \eta V_u]\]</span></p>
-<p>Which reorganizing terms is equal to:</p>
+<p>Reorganizing terms boils down to:</p>
 <p><span class="math display">\[V_e(w) = \frac{1}{\rho + \eta}[w + \eta V_u ]\]</span></p>
 <p>The second equation is the <strong>value of being unemployed</strong>:</p>
 <p><span class="math display">\[V_u = \frac{1}{\rho}[c+(1-\lambda)V_u+ \lambda + \mathbf{E} \max \lbrace V_e, V_u \rbrace]\]</span></p>
-<p>Which, after rearranging is equal to:</p>
+<p>Which, after rearranging, is equal to:</p>
 <p><span class="math display">\[\rho V_u = -c + \frac{\lambda}{\rho + \eta} \int_{\rho V_u}(w-\rho V_u)f(w)\]</span></p>
-<p>These two equations describe the whole behaviour of the economy under the assumptions of the model. Now let’s list all the assumptions that we have untill now, since they are going to be usefull for the construction of the likelihhod function:</p>
+<p>These two equations describe the whole behaviour of the economy under the assumptions of the model. Now let’s list all the assumptions that we have until now, since they are going to be usefull for the construction of the likelihood function:</p>
 <ul>
-<li><p>From the model we have that the minimum accepted wage is equal to <span class="math inline">\(w^* = \rho V_u\)</span>. In the paper the minimum accepted wage is not estimated, but instead is taken from the data.</p></li>
+<li><p>The minimum accepted wage is equal to <span class="math inline">\(w^* = \rho V_u\)</span>. In the paper the minimum accepted wage is not estimated, but instead is taken from the data.</p></li>
 <li><p>Arrival rate of offers: <span class="math inline">\(\lambda\)</span>.</p></li>
 <li><p>Termination rate: <span class="math inline">\(\eta\)</span></p></li>
-<li><p>Distribution of employment duration. <span class="math inline">\(f[t_e]= \eta e^{(-\eta t_e)}\)</span>; the average duration is then <span class="math inline">\(\mathbf{E}[t_e]= \eta^{-1}\)</span>.</p></li>
-<li><p>Rate of leaving the unemployed is equal to: <span class="math inline">\(\lambda (1- F(w^*))\)</span>. We aare going to call this <span class="math inline">\(h_u\)</span></p></li>
+<li><p>Distribution of employment duration: <span class="math inline">\(f[t_e]= \eta e^{(-\eta t_e)}\)</span>; the average duration is then <span class="math inline">\(\mathbf{E}[t_e]= \eta^{-1}\)</span>.</p></li>
+<li><p>Rate of leaving the unemployed is equal to: <span class="math inline">\(\lambda (1- F(w^*))\)</span>. We are going to call this <span class="math inline">\(h_u\)</span></p></li>
 <li><p>Distribution of unemployment duration is exponential <span class="math inline">\(f[t_u]= h_u e^{-h_u t_u)}\)</span>. The expected value in unemployment then is then equal to <span class="math inline">\((\lambda (1- F(w^*)))^{-1}=h_u^{-1}\)</span></p></li>
 <li><p>The distribution of accepted wages is equal to: <span class="math inline">\(\frac{f(w)}{1 - F(w^*)}\)</span>. The term below is to adjust it to a distribution since a proper distribution must integrate to 1 and our is left censored.</p></li>
-<li><p>The distribution of employments spells is right censored. Given that is negative exponential it coincide with the population.</p></li>
+<li><p>The distribution of employments spells is right-censored. Given that it is negative exponential it coincides with the population.</p></li>
 </ul>
-<p>Given all this information we can proceed to calculate the probability to sample an employed individual, and the probability to sample an unemployed individual. Let’s start first by the probability of sample an unemployed indivdual:</p>
-<p><span class="math display">\[P(U)=\frac{\mathbf{E}[t_u]}{\mathbf{E}[t_u]+\mathbf{E}[t_e]}=\frac{h_u^{-1}}{h_u^{-1}+\eta^{-1}}=\frac{\eta}{h_u+\eta}\]</span> Now let’s state the probability of sample and employed individual:</p>
+<p>Considering all this information, we can proceed to calculate the probability to sample an employed individual out of the population as weel as the probability to sample an unemployed individual. Let’s start with the latter:</p>
+<p><span class="math display">\[P(U)=\frac{\mathbf{E}[t_u]}{\mathbf{E}[t_u]+\mathbf{E}[t_e]}=\frac{h_u^{-1}}{h_u^{-1}+\eta^{-1}}=\frac{\eta}{h_u+\eta}\]</span> Now let’s derive the probability of sampling an employed individual:</p>
 <p><span class="math display">\[P(E)=\frac{\mathbf{E}[t_e]}{\mathbf{E}[t_u]+\mathbf{E}[t_e]}=\frac{\eta^{-1}}{h_u^{-1}+\eta^{-1}}=\frac{h_u}{h_u+\eta}\]</span></p>
-<p>Given that we have normally data on the duration of unemployment <span class="math inline">\(t_u^o\)</span> and the wages <span class="math inline">\(w^o\)</span> observed from census or surveys, we can calculate such parameters because now we can define the likelihood:</p>
-<p><span class="math display">\[
-\begin{equation}
+<p>Usually, data on the duration of unemployment <span class="math inline">\(t_u^o\)</span> and the wages <span class="math inline">\(w^o\)</span> are observed from census or surveys, hence we can calculate such parameters because now we can define the likelihood:</p>
+<span class="math display">\[\begin{equation}
 \begin{aligned}
 \mathcal{L}&amp;=\prod_U [P(U) \times f(t_u^o)]\times \prod_E [P(E) \times f(w^o)]=\\
 &amp;= \prod_U\left[ P(U) \times \lambda (1- F(w^*)) e^{- \lambda (1- F(w^*)) t_u} \right] \times \prod_E \left[P(E) \times \frac{f(w|\mu, \sigma)}{1 - F(w^*)} \right]=\\
@@ -918,18 +920,17 @@ Akaike Inf. Crit.
 &amp;=  \prod_U\left[\frac{\eta}{\lambda (1- F(w^*))+\eta}  \times \lambda (1- F(w^*)) e^{- \lambda (1- F(w^*)) t_u} \right] \times\\
 &amp;\prod_E \left[\frac{\lambda (1- F(w^*))}{\lambda (1- F(w^*))+\eta} \times \frac{f(w|\mu, \sigma)}{1 - F(w^*)} \right]\\
 \end{aligned}
-\end{equation}
-\]</span></p>
-<p>After taking logs and rearranging terms we arrive to the following <strong>log-likelihood</strong>:</p>
+\end{equation}\]</span>
+<p>After taking logs and rearranging we obtain the following <strong>log-likelihood</strong>:</p>
 <p><span class="math display">\[\log \mathcal{L} = N \log(h_u) - h_u \sum t_u + N_u \log(\eta) + \sum f(w|\mu,\sigma) -  N_e \log(1-F(w^*))  - N_e \log(h_u + \eta)\]</span></p>
-<p>We just need to put this function into the optimizer with some data and we can obtain the parameters of the model. Before continuing to implement the likelihood function in R we are going to make a sop and gather some data to estimate our model.</p>
+<p>We just need to feed this function to the optimizer with some data and we can obtain the parameters of the model. Before carrying out the liklihood estimation, we have a look at the data and try to parse out some useful extra information.</p>
 </div>
 <div id="the-data" class="section level4">
 <h4><span class="header-section-number">3.3.0.2</span> The Data</h4>
-<p>In order to estimate the model we just need two vectors of data: duration of unemployment for the unemployed and hourly wages for the employed. To make a real example we are going to use the Current population survey (CSP), but look that most of the household surveys contain these kind of data (i.e. colombian GEIH).</p>
-<p>First we go to the <a href="http://www.census.gov/cps/">page of the CPS</a>, and learn about the nature of the data. We can also download the historical monthly data from the <a href="https://data.nber.org/data/cps_basic.html">NBER webpage</a>. For this exercise we are going to use the January 2019 data, that can be optained following <a href="https://data.nber.org/cps-basic/jan19pub.zip">this link</a>. Download and unzip the dataset in your working directory. Take also a moment to check the required variables, looking the <a href="https://data.nber.org/cps-basic/January_2017_Record_Layout.txt">documentation for the data</a>. The open the dataset using the functionality of the reader package <span class="citation">(Wickham, Hester, and Francois 2017)</span>.</p>
+<p>To estimate the model we just need two vectors of data: duration of unemployment and hourly wages. To make a real example we are going to use the Current population survey (CSP), but most of the household surveys contain these kind of data (eg, colombian GEIH).</p>
+<p>First we go to the <a href="http://www.census.gov/cps/">page of the CPS</a>, and learn about the nature of the data. We can also download the historical monthly data from the <a href="https://data.nber.org/data/cps_basic.html">NBER webpage</a>. For this exercise we are going to use the January 2019 data, which can be obtained following <a href="https://data.nber.org/cps-basic/jan19pub.zip">this link</a>. Download and unzip the dataset in your working directory. Take also a moment to check the required variables, looking the <a href="https://data.nber.org/cps-basic/January_2017_Record_Layout.txt">documentation for the data</a>. The open the dataset using the functionality of the <code>reader</code> package <span class="citation">(Wickham, Hester, and Francois 2017)</span>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;jan19pub.dat&quot;</span>, <span class="dt">col_names =</span> <span class="ot">FALSE</span>, <span class="dt">trim_ws =</span> <span class="ot">FALSE</span>)</code></pre></div>
-<p>As you will see the data only contains 1 vector of text. Each row is a long sring of text. If you took the time of reading the documentation you will see that you can fin next to each variable the description and the location of the specific data in such long string. After reading the documentation we identify that in order to have a correct vector of wages for the employed and a correct vector of duration of the unemployed we are going to need the following information:</p>
+<p>As you see, the data only contain 1 vector of text – in jargon, observations are in long format. Each row is a long string of text. If you took the time to read the documentation you will see that you can find next to each variable the description and the location of the specific information in such long string. To extract information about unemployment duration and employment wages we need the following parts:</p>
 <table>
 <thead>
 <tr class="header">
@@ -1013,7 +1014,7 @@ Akaike Inf. Crit.
 </tr>
 </tbody>
 </table>
-<p>After identifying this information we proceed to filter the information which is necessary. In order to do so we are going to create a database for the employed and a database for the unemployed given that the identification involves different infromation and variables. Let’s begin with employed: we create a <em>‘data.frame’</em> containing the relevant colums and we extract the information by the position in the string.</p>
+<p>After identifying this information we can filter the data. To do so we create a database for the employed and a database for the unemployed, since the identification requires different information and variables. Let’s begin with the employed: we create a <em>‘data.frame’</em> containing the relevant colums and we extract the information by the position in the string.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">employed &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="kw">matrix</span>(<span class="ot">NA</span>, <span class="dt">nrow =</span> <span class="kw">nrow</span>(data), <span class="dt">ncol =</span> <span class="dv">8</span>))
 
 <span class="kw">colnames</span>(employed) &lt;-<span class="st"> </span><span class="kw">c</span>(  <span class="st">&quot;HRMIS&quot;</span>,
@@ -1033,7 +1034,7 @@ employed<span class="op">$</span>PRERNHLY       &lt;-<span class="st"> </span><s
 employed<span class="op">$</span>PTWK           &lt;-<span class="st"> </span><span class="kw">apply</span>(data,<span class="dv">1</span>, <span class="cf">function</span>(x) <span class="kw">as.numeric</span>(<span class="kw">substr</span>(<span class="kw">toString</span>(x),<span class="dv">535</span>,<span class="dv">535</span>)))
 employed<span class="op">$</span>PEHRUSL1       &lt;-<span class="st"> </span><span class="kw">apply</span>(data,<span class="dv">1</span>, <span class="cf">function</span>(x) <span class="kw">as.numeric</span>(<span class="kw">substr</span>(<span class="kw">toString</span>(x),<span class="dv">218</span>,<span class="dv">219</span>)))
 employed<span class="op">$</span>GESTFIPS       &lt;-<span class="st"> </span><span class="kw">apply</span>(data,<span class="dv">1</span>, <span class="cf">function</span>(x) <span class="kw">substr</span>(<span class="kw">toString</span>(x),<span class="dv">93</span>,<span class="dv">94</span>))</code></pre></div>
-<p>Reading the documentation we identify that the invalid cases are coded <span class="math inline">\(0\)</span> or negative values <span class="math inline">\(-1,-2,\dots\)</span>. We reclassify this coded infromation as <code>NA</code>, a <em>not available</em> or <em>missing</em> value. We are going to keep the observations that are from the outgoing rotations (have earnings information). After that we are going to filter the valid hourly waes and convert the weekkly waes to hours using the number of hours. We are going to keep only the people that has this information. We are also going to take the right number of decimal for the variables which specify it. We are going to keep only the observations that are above the legal federal minimum wage of <span class="math inline">\(7,5\)</span> USD, and we are going to trim the data at the percentile 99.9%.</p>
+<p>Reading the documentation we identify that the invalid cases are coded <span class="math inline">\(0\)</span> or negative values <span class="math inline">\(-1,-2,\dots\)</span>. We reclassify this coded infromation as <code>NA</code>, a <em>not available</em> or <em>missing value</em>. We are going to keep the observations that are from the outgoing rotations (have earnings information). After that we are going to filter the valid hourly wages and convert the weekkly wages to hours using the number of hours. We are going to keep only the people that have this information. We are also going to take the right number of decimal for the variables that specify it. We are going to keep only the observations that are above the legal federal minimum wage of <span class="math inline">\(7.5\)</span> USD, and we are going to trim the data at the percentile 99.9%.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">employed[employed<span class="op">&lt;=</span><span class="dv">0</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
         
 employed &lt;-<span class="st"> </span>employed[<span class="kw">which</span>(employed<span class="op">$</span>HRMIS <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">4</span>,<span class="dv">8</span>)),]
@@ -1057,7 +1058,7 @@ employed &lt;-<span class="st"> </span>employed[<span class="kw">which</span>(em
 tokeep_e &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;GESTFIPS&quot;</span>, <span class="st">&quot;wages&quot;</span>)
 employed &lt;-<span class="st"> </span>employed[,tokeep_e]
 employed<span class="op">$</span>duration_U &lt;-<span class="st"> </span><span class="dv">0</span></code></pre></div>
-<p>Now we proceed to do the same for the unemployed: We collect the infromation in each variable following the position. We take the people that the labor employment status is unemployment and that has information on the duration. Then we convert the information to montly data.</p>
+<p>Now we apply the same selection to the unemployed: We collect the infromation in each variable following the position. We take the people for which the labor employment status is unemployment and that have information on the duration. Then we convert the information to monthly data.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">unemployed &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="kw">matrix</span>(<span class="ot">NA</span>, <span class="dt">nrow =</span> <span class="kw">nrow</span>(data), <span class="dt">ncol =</span> <span class="dv">3</span>))
 <span class="kw">colnames</span>(unemployed) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;PEMLR&quot;</span>,
                         <span class="st">&quot;RUNEDUR&quot;</span>,
@@ -1073,34 +1074,34 @@ unemployed<span class="op">$</span>duration_U &lt;-<span class="st"> </span>unem
 unemployed &lt;-<span class="st"> </span>unemployed[,<span class="kw">c</span>(<span class="st">&quot;GESTFIPS&quot;</span>,<span class="st">&quot;duration_U&quot;</span>)]
 unemployed<span class="op">$</span>wages &lt;-<span class="st"> </span><span class="dv">0</span> 
 unemployed &lt;-<span class="st"> </span>unemployed[,<span class="kw">c</span>(<span class="st">&quot;GESTFIPS&quot;</span>,<span class="st">&quot;wages&quot;</span>, <span class="st">&quot;duration_U&quot;</span>)]</code></pre></div>
-<p>We the attach the two data frames:</p>
+<p>As a final step, we merge the two dataset:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data &lt;-<span class="st"> </span><span class="kw">rbind</span>(employed,unemployed)</code></pre></div>
-<p>We are going to select and calculate the MLE using only each state. For this exercise we are going to use the information on Nevada (<span class="math inline">\(GESTFIPS = 32\)</span>)</p>
+<p>We are going to select and calculate the MLE using only one state, as minimum wages laws vary locally. For this exercise we are going to use the information on Nevada (<span class="math inline">\(GESTFIPS = 32\)</span>)</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_sub &lt;-<span class="st"> </span>data[<span class="kw">which</span>(data<span class="op">$</span>GESTFIPS<span class="op">==</span><span class="st">&quot;32&quot;</span>),]</code></pre></div>
 </div>
 <div id="estimation-1" class="section level4">
 <h4><span class="header-section-number">3.3.0.3</span> Estimation</h4>
-<p>In order to estimate the identified log likelihood we are going to code two auxiliary funcions that appear all the time in the procedure. The first one is the <a href="https://en.wikipedia.org/wiki/Log-normal_distribution">log-normal density function</a>:</p>
-<p><span class="math display">\[\phi \left( \frac{\log(x) - \mu}{\sigma} \right)(\frac{1}{x \sigma})\]</span> Where <span class="math inline">\(\phi\)</span> is the probability density function of the <span class="math inline">\(N(0,1)\)</span> distribution.</p>
+<p>In order to estimate the log likelihood we are going to code two auxiliary funcions that appear all the time in the procedure. The first one is the <a href="https://en.wikipedia.org/wiki/Log-normal_distribution">log-normal density function</a>:</p>
+<p><span class="math display">\[LN \left(x; \mu, \sigma\right) = \phi \left( \frac{\log(x) - \mu}{\sigma} \right)(\frac{1}{x \sigma})\]</span> Where <span class="math inline">\(\phi\)</span> is the probability density function of the <span class="math inline">\(N(0,1)\)</span> distribution.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lognorm &lt;-<span class="st"> </span><span class="cf">function</span>(x,mu,sigma){
         res &lt;-<span class="st"> </span><span class="kw">dnorm</span>((<span class="kw">log</span>(x)<span class="op">-</span>mu)<span class="op">/</span>(sigma))<span class="op">*</span>(<span class="dv">1</span><span class="op">/</span>(sigma<span class="op">*</span>x))
         <span class="kw">return</span>(res)
 }</code></pre></div>
-<p>The second function is the <em>survival function</em>, which is the value of the probability to be over the minimum accepted wage given a distribution. We define the survival as <span class="math inline">\((1- F(w^*))\)</span>. The cumulative distribution function of the log-normal is equalt to:</p>
+<p>The second function is the <em>survival function</em>, which is the probability to be over the minimum accepted wage for a given distribution. We define the survival as <span class="math inline">\((1- F(w^*))\)</span>. The cumulative distribution function of the log-normal is equal to:</p>
 <p><span class="math display">\[\Phi \left( \frac{\log(x) - \mu}{\sigma} \right)\]</span> Where <span class="math inline">\(\Phi\)</span> is the cumulative distribution function of the standard normal distribution.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">surv &lt;-<span class="st"> </span><span class="cf">function</span>(val,mu,sigma){
         res &lt;-<span class="st"> </span><span class="dv">1</span> <span class="op">-</span><span class="st"> </span><span class="kw">pnorm</span>((<span class="kw">log</span>(val)<span class="op">-</span>mu)<span class="op">/</span>(sigma))
         <span class="kw">return</span>(res)
 }</code></pre></div>
-<p>There are other functions already developed that are suitable for this kind of problems. One xample is the <code>mle2</code> function from the <em>‘bbmle’</em> package <span class="citation">(Bolker and Team 2017)</span>. This is useful since the function deals with standard errors and provide other information that might be usefull. There are some difference between the <code>optim()</code> method already covered and the <code>mle2()</code> function. This function requires:</p>
+<p>There are other built-in functions already developed that are suitable for this kind of problems. One xample is the <code>mle2</code> function from the <em>‘bbmle’</em> package <span class="citation">(Bolker and Team 2017)</span>. This is useful since the function deals with standard errors and provides other information that might be useful. There are some difference between the <code>optim()</code> method already covered and the <code>mle2()</code> function. This latter function requires:</p>
 <ul>
 <li><p>Function to calculate negative log-likelihood</p></li>
-<li><p>A start list for the optimizer</p></li>
+<li><p>Starting values for the optimizer</p></li>
 <li><p>The optimizer used</p></li>
-<li><p>Given that we are going to introcue the data as an input of the function, we need the data</p></li>
+<li><p>The data</p></li>
 </ul>
-<p>Now we are going to code the log-likelihood function we had recovered using the same procedure as in the previous example:</p>
-<p>First we are going to code each of the parameters as an input in the function so the function can recognize it, and as mentioned earlier also the data. Then we are going to write the likelihood using the definition derived earlier.</p>
+<p>Now we are going to code the log-likelihood function we recovered using the same procedure as in the previous example:</p>
+<p>First we are going to code each of the parameters and the data as inputs in the function. Then we are going to code the likelihood using the definition derived earlier.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">LLfnct_mle &lt;-<span class="st"> </span><span class="cf">function</span>(alambda,aeta,amu,asigma, data){
         
         
@@ -1128,7 +1129,7 @@ unemployed &lt;-<span class="st"> </span>unemployed[,<span class="kw">c</span>(<
         <span class="kw">return</span>(<span class="op">-</span>LL)
         
 }</code></pre></div>
-<p>After that we just have to set up the maximizer and maximize the function:</p>
+<p>After that we just have to set up the maximizer and feed it the function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m0 &lt;-<span class="st"> </span><span class="kw">mle2</span>(LLfnct_mle, 
            <span class="dt">start =</span> <span class="kw">list</span>(<span class="dt">alambda =</span><span class="op">-</span><span class="dv">1</span>,
                         <span class="dt">aeta =</span> <span class="op">-</span><span class="dv">1</span>, 
@@ -1140,7 +1141,7 @@ unemployed &lt;-<span class="st"> </span>unemployed[,<span class="kw">c</span>(<
 m0<span class="op">@</span>coef</code></pre></div>
 <pre><code>##    alambda       aeta        amu     asigma 
 ## -0.4541099 -1.8175680  2.7146674 -0.4361533</code></pre>
-<p>All the coeficients need to be transformed so we recover them and present the results. But before that we are going to calculate the standard error using the delta method and the information from the hessian. At the end what we are doing is just rescaling the errors.</p>
+<p>All the coeficients need to be transformed to recover and present the results. Before that we are going to calculate the standard errors using the delta method and the information from the hessian. At the end what we are doing is just rescaling the errors.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lambda &lt;-<span class="st"> </span><span class="kw">exp</span>(m0<span class="op">@</span>coef[<span class="st">&quot;alambda&quot;</span>])
 eta &lt;-<span class="st"> </span><span class="kw">exp</span>(m0<span class="op">@</span>coef[<span class="st">&quot;aeta&quot;</span>])
 mu &lt;-<span class="st"> </span>m0<span class="op">@</span>coef[<span class="st">&quot;amu&quot;</span>]
@@ -1248,13 +1249,31 @@ sigma
 
 <div id="refs" class="references">
 <div>
+<p>Abrevaya, Jason. 2002. “The Effects of Demographics and Maternal Behavior on the Distribution of Birth Outcomes.” In <em>Economic Applications of Quantile Regression</em>, 247–57. Springer.</p>
+</div>
+<div>
 <p>Bolker, Ben, and R Development Core Team. 2017. <em>Bbmle: Tools for General Maximum Likelihood Estimation</em>. <a href="https://CRAN.R-project.org/package=bbmle" class="uri">https://CRAN.R-project.org/package=bbmle</a>.</p>
+</div>
+<div>
+<p>Dowle, Matt, and Arun Srinivasan. 2019. <em>Data.table: Extension of ‘Data.frame‘</em>. <a href="https://CRAN.R-project.org/package=data.table" class="uri">https://CRAN.R-project.org/package=data.table</a>.</p>
+</div>
+<div>
+<p>Firpo, Sergio, Nicole M Fortin, and Thomas Lemieux. 2009. “Unconditional Quantile Regressions.” <em>Econometrica</em> 77 (3). Wiley Online Library: 953–73.</p>
+</div>
+<div>
+<p>Firpo, Sergio, Nicole Fortin, and Thomas Lemieux. 2018. “Decomposing Wage Distributions Using Recentered Influence Function Regressions.” <em>Econometrics</em> 6 (2). Multidisciplinary Digital Publishing Institute: 28.</p>
 </div>
 <div>
 <p>Flinn, Christopher, and James Heckman. 1982. “New Methods for Analyzing Structural Models of Labor Force Dynamics.” <em>Journal of Econometrics</em> 18 (1). Elsevier: 115–68.</p>
 </div>
 <div>
 <p>Hlavac, Marek. 2018. <em>Stargazer: Well-Formatted Regression and Summary Statistics Tables</em>. <a href="https://CRAN.R-project.org/package=stargazer" class="uri">https://CRAN.R-project.org/package=stargazer</a>.</p>
+</div>
+<div>
+<p>Koenker, Roger, and Kevin F Hallock. 2001. “Quantile Regression.” <em>Journal of Economic Perspectives</em> 15 (4): 143–56.</p>
+</div>
+<div>
+<p>Machado, José AF, and José Mata. 2005. “Counterfactual Decomposition of Changes in Wage Distributions Using Quantile Regression.” <em>Journal of Applied Econometrics</em> 20 (4). Wiley Online Library: 445–65.</p>
 </div>
 <div>
 <p>Maechler, Martin. 2019. <em>Rmpfr: R Mpfr - Multiple Precision Floating-Point Reliable</em>. <a href="https://CRAN.R-project.org/package=Rmpfr" class="uri">https://CRAN.R-project.org/package=Rmpfr</a>.</p>
@@ -1264,6 +1283,12 @@ sigma
 </div>
 <div>
 <p>Wickham, Hadley, and Evan Miller. 2018. <em>Haven: Import and Export ’Spss’, ’Stata’ and ’Sas’ Files</em>. <a href="https://CRAN.R-project.org/package=haven" class="uri">https://CRAN.R-project.org/package=haven</a>.</p>
+</div>
+<div>
+<p>Wickham, Hadley, Winston Chang, Lionel Henry, Thomas Lin Pedersen, Kohske Takahashi, Claus Wilke, Kara Woo, and Hiroaki Yutani. 2019. <em>Ggplot2: Create Elegant Data Visualisations Using the Grammar of Graphics</em>. <a href="https://CRAN.R-project.org/package=ggplot2" class="uri">https://CRAN.R-project.org/package=ggplot2</a>.</p>
+</div>
+<div>
+<p>Wickham, Hadley, Romain François, Lionel Henry, and Kirill Müller. 2018. <em>Dplyr: A Grammar of Data Manipulation</em>. <a href="https://CRAN.R-project.org/package=dplyr" class="uri">https://CRAN.R-project.org/package=dplyr</a>.</p>
 </div>
 <div>
 <p>Wickham, Hadley, Jim Hester, and Romain Francois. 2017. <em>Readr: Read Rectangular Text Data</em>. <a href="https://CRAN.R-project.org/package=readr" class="uri">https://CRAN.R-project.org/package=readr</a>.</p>
