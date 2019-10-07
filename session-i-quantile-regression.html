@@ -10,16 +10,16 @@
 
   <meta property="og:title" content="Chapter 2 Session I - Quantile regression | Microeconometrics - e-Notes: Practice guide using R" />
   <meta property="og:type" content="book" />
-  
-  
+
+
   <meta property="og:description" content="This course notes are an interactive e-material for the Microeconometrics course in the master APE in Paris School of Economics. The aim of this notes is to provide an e-learning material to apply the theorical concepts of the class." />
-  
+
 
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="Chapter 2 Session I - Quantile regression | Microeconometrics - e-Notes: Practice guide using R" />
-  
+
   <meta name="twitter:description" content="This course notes are an interactive e-material for the Microeconometrics course in the master APE in Paris School of Economics. The aim of this notes is to provide an e-learning material to apply the theorical concepts of the class." />
-  
+
 
 <meta name="author" content="Jaime MONTANA" />
 
@@ -28,8 +28,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-  
-  
+
+
 <link rel="prev" href="index.html"/>
 <link rel="next" href="session-ii-maximum-likelihood-estimation-mle.html"/>
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
@@ -196,13 +196,13 @@ d) reproduce the regressions tables</code></pre></li>
 <p>Let’s generate some data to see how the line bisects the error space. Since we are generating random data the first thing is to set a seed so our example is reproducible. Then, we generate variance for our error term (not constant) and set an intercept and define the slope. We set everything in a ‘data.frame’ objecto to plot it using the package ‘ggplot2’<span class="citation">(Wickham et al. 2019)</span>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">464</span>)
 npoints &lt;-<span class="st"> </span><span class="dv">150</span>
-x &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">10</span>,<span class="dt">length.out =</span> npoints)        
-sigma &lt;-<span class="st"> </span><span class="fl">0.1</span> <span class="op">+</span><span class="st"> </span><span class="fl">0.25</span><span class="op">*</span><span class="kw">sqrt</span>(x) <span class="op">+</span><span class="st"> </span><span class="kw">ifelse</span>(x<span class="op">&gt;</span><span class="dv">6</span>,<span class="dv">1</span>,<span class="dv">0</span>)                    
-intercept &lt;-<span class="st"> </span><span class="dv">2</span>                                
-slope &lt;-<span class="st"> </span><span class="fl">0.2</span>                              
-                             
-error &lt;-<span class="st"> </span><span class="kw">rnorm</span>(npoints,<span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> sigma)      
-y &lt;-<span class="st"> </span>intercept <span class="op">+</span><span class="st"> </span>slope<span class="op">*</span>x <span class="op">+</span><span class="st"> </span>error                    
+x &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">10</span>,<span class="dt">length.out =</span> npoints)
+sigma &lt;-<span class="st"> </span><span class="fl">0.1</span> <span class="op">+</span><span class="st"> </span><span class="fl">0.25</span><span class="op">*</span><span class="kw">sqrt</span>(x) <span class="op">+</span><span class="st"> </span><span class="kw">ifelse</span>(x<span class="op">&gt;</span><span class="dv">6</span>,<span class="dv">1</span>,<span class="dv">0</span>)
+intercept &lt;-<span class="st"> </span><span class="dv">2</span>
+slope &lt;-<span class="st"> </span><span class="fl">0.2</span>
+
+error &lt;-<span class="st"> </span><span class="kw">rnorm</span>(npoints,<span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> sigma)
+y &lt;-<span class="st"> </span>intercept <span class="op">+</span><span class="st"> </span>slope<span class="op">*</span>x <span class="op">+</span><span class="st"> </span>error
 dat &lt;-<span class="st"> </span><span class="kw">data.frame</span>(x,y)</code></pre></div>
 <p>Let’s plot our synthetic data. We are going to plot the line crossing the 90th percentile conditioning on <span class="math inline">\(X\)</span> (dashed red line), the OLS curve (blue line with confidence intervals in grey) and the LAD regression (regression to the median, <span class="math inline">\(\tau = 0.5\)</span>)</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat, <span class="kw">aes</span>(x,y)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span><span class="kw">geom_smooth</span>(<span class="dt">method=</span><span class="st">&quot;lm&quot;</span>) <span class="op">+</span><span class="st"> </span>
@@ -261,7 +261,7 @@ type_of_data[<span class="dv">35</span><span class="op">:</span><span class="dv"
 ## 1 integer integer integer integer  logical integer integer</code></pre>
 <p>Now that we have had a look at the content of the database, let’s import the data and clean it. To import only the relevant variables of the paper we create a list containing all the relevant variables for the estimation. I used the codebook to construct this list. Then we use this list within ‘fread()’ to import solely the desired columns.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">desired &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;birmon&quot;</span>,<span class="st">&quot;mrace3&quot;</span>,<span class="st">&quot;dmage&quot;</span>,<span class="st">&quot;dbirwt&quot;</span>,<span class="st">&quot;dplural&quot;</span>,<span class="st">&quot;stnatexp&quot;</span>,
-             <span class="st">&quot;mraceimp&quot;</span>,<span class="st">&quot;dmarimp&quot;</span>,<span class="st">&quot;mageimp&quot;</span>,<span class="st">&quot;cseximp&quot;</span>,<span class="st">&quot;dmar&quot;</span>,<span class="st">&quot;meduc6&quot;</span>, 
+             <span class="st">&quot;mraceimp&quot;</span>,<span class="st">&quot;dmarimp&quot;</span>,<span class="st">&quot;mageimp&quot;</span>,<span class="st">&quot;cseximp&quot;</span>,<span class="st">&quot;dmar&quot;</span>,<span class="st">&quot;meduc6&quot;</span>,
              <span class="st">&quot;wtgain&quot;</span>, <span class="st">&quot;mpre5&quot;</span>, <span class="st">&quot;tobacco&quot;</span>,<span class="st">&quot;cigar&quot;</span>, <span class="st">&quot;csex&quot;</span>, <span class="st">&quot;plurimp&quot;</span>, <span class="st">&quot;restatus&quot;</span>)
 
 data &lt;-<span class="st"> </span><span class="kw">fread</span>(path_source, <span class="dt">select =</span> desired)</code></pre></div>
@@ -525,7 +525,7 @@ boy
 X &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="kw">names</span>(data[,<span class="op">-</span><span class="dv">1</span>]),<span class="dt">collapse =</span> <span class="st">&quot; + &quot;</span>)
 formula_qr &lt;-<span class="st"> </span><span class="kw">as.formula</span>(<span class="kw">paste</span>(Y, <span class="st">&quot; ~ &quot;</span>, X))
 formula_qr</code></pre></div>
-<pre><code>## birwt ~ black + married + age + agesq + hsgrad + somecoll + collgrad + 
+<pre><code>## birwt ~ black + married + age + agesq + hsgrad + somecoll + collgrad +
 ##     wtgain + natal2 + natal3 + novisit + nosmoke + cigar + boy</code></pre>
 <p>And then we construct the vector of quantiles:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">quantiles_table &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>,<span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span>,<span class="fl">0.9</span>)</code></pre></div>
@@ -533,14 +533,14 @@ formula_qr</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">quant_reg_res1992 &lt;-<span class="st"> </span><span class="kw">rq</span>(formula_qr,<span class="dt">tau =</span> quantiles_table, <span class="dt">data =</span> data, <span class="dt">method =</span> <span class="st">&#39;fn&#39;</span>)
 qr_results &lt;-<span class="st"> </span><span class="kw">summary.rqs</span>(quant_reg_res1992)
 qr_results</code></pre></div>
-<pre><code>## 
-## Call: rq(formula = formula_qr, tau = quantiles_table, data = data, 
+<pre><code>##
+## Call: rq(formula = formula_qr, tau = quantiles_table, data = data,
 ##     method = &quot;fn&quot;)
-## 
+##
 ## tau: [1] 0.1
-## 
+##
 ## Coefficients:
-##             Value      Std. Error t value    Pr(&gt;|t|)  
+##             Value      Std. Error t value    Pr(&gt;|t|)
 ## (Intercept) 1556.90509   58.45879   26.63252    0.00000
 ## black       -253.65558    7.91665  -32.04078    0.00000
 ## married       73.32313    6.55406   11.18744    0.00000
@@ -556,14 +556,14 @@ qr_results</code></pre></div>
 ## nosmoke      170.75013   11.15951   15.30087    0.00000
 ## cigar         -3.80301    0.63954   -5.94644    0.00000
 ## boy           87.76342    4.50293   19.49028    0.00000
-## 
-## Call: rq(formula = formula_qr, tau = quantiles_table, data = data, 
+##
+## Call: rq(formula = formula_qr, tau = quantiles_table, data = data,
 ##     method = &quot;fn&quot;)
-## 
+##
 ## tau: [1] 0.25
-## 
+##
 ## Coefficients:
-##             Value      Std. Error t value    Pr(&gt;|t|)  
+##             Value      Std. Error t value    Pr(&gt;|t|)
 ## (Intercept) 2020.48850   37.98519   53.19147    0.00000
 ## black       -216.79384    4.64082  -46.71456    0.00000
 ## married       55.18092    4.23478   13.03042    0.00000
@@ -579,14 +579,14 @@ qr_results</code></pre></div>
 ## nosmoke      171.83979    7.21094   23.83042    0.00000
 ## cigar         -3.51950    0.46625   -7.54859    0.00000
 ## boy          109.56824    2.93365   37.34874    0.00000
-## 
-## Call: rq(formula = formula_qr, tau = quantiles_table, data = data, 
+##
+## Call: rq(formula = formula_qr, tau = quantiles_table, data = data,
 ##     method = &quot;fn&quot;)
-## 
+##
 ## tau: [1] 0.5
-## 
+##
 ## Coefficients:
-##             Value      Std. Error t value    Pr(&gt;|t|)  
+##             Value      Std. Error t value    Pr(&gt;|t|)
 ## (Intercept) 2377.88346   31.58611   75.28256    0.00000
 ## black       -199.07093    3.82874  -51.99386    0.00000
 ## married       50.56335    3.57758   14.13338    0.00000
@@ -602,14 +602,14 @@ qr_results</code></pre></div>
 ## nosmoke      158.82091    6.10852   25.99989    0.00000
 ## cigar         -3.90210    0.39009  -10.00299    0.00000
 ## boy          129.12756    2.55257   50.58719    0.00000
-## 
-## Call: rq(formula = formula_qr, tau = quantiles_table, data = data, 
+##
+## Call: rq(formula = formula_qr, tau = quantiles_table, data = data,
 ##     method = &quot;fn&quot;)
-## 
+##
 ## tau: [1] 0.75
-## 
+##
 ## Coefficients:
-##             Value      Std. Error t value    Pr(&gt;|t|)  
+##             Value      Std. Error t value    Pr(&gt;|t|)
 ## (Intercept) 2715.22798   34.34314   79.06174    0.00000
 ## black       -192.40481    4.26347  -45.12869    0.00000
 ## married       42.45607    4.08114   10.40300    0.00000
@@ -625,14 +625,14 @@ qr_results</code></pre></div>
 ## nosmoke      153.22724    6.65373   23.02876    0.00000
 ## cigar         -4.46120    0.40831  -10.92596    0.00000
 ## boy          142.40192    2.86197   49.75669    0.00000
-## 
-## Call: rq(formula = formula_qr, tau = quantiles_table, data = data, 
+##
+## Call: rq(formula = formula_qr, tau = quantiles_table, data = data,
 ##     method = &quot;fn&quot;)
-## 
+##
 ## tau: [1] 0.9
-## 
+##
 ## Coefficients:
-##             Value      Std. Error t value    Pr(&gt;|t|)  
+##             Value      Std. Error t value    Pr(&gt;|t|)
 ## (Intercept) 2967.68273   47.25148   62.80613    0.00000
 ## black       -182.08652    5.68366  -32.03682    0.00000
 ## married       38.55994    5.42803    7.10386    0.00000
@@ -650,17 +650,17 @@ qr_results</code></pre></div>
 ## boy          153.58224    3.83777   40.01857    0.00000</code></pre>
 <p>One important consideration is the kind of errors that the procedure is calculating when running the summary.</p>
 <p>Nevertheless this kind of results are not easy to handle and manage, and is desireable to have a summary table like the one of the paper or to summarize the results in just one table. We have seen already that is possible to save the results in LaTeX, now we are going to save them in TXT format, which might be usefull in many cases. To this end, we select the first and second column of the results. If in this case the list contains only five items, is still acceptable to do it line by line. If an operation has more elements and is used often it is better to write a function to save time and avoid copypaste mistakes.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tab_res &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">cbind</span>(qr_results[[<span class="dv">1</span>]]<span class="op">$</span>coefficients[,<span class="dv">1</span>], 
-                 qr_results[[<span class="dv">2</span>]]<span class="op">$</span>coefficients[,<span class="dv">1</span>], 
-                 qr_results[[<span class="dv">3</span>]]<span class="op">$</span>coefficients[,<span class="dv">1</span>], 
-                 qr_results[[<span class="dv">4</span>]]<span class="op">$</span>coefficients[,<span class="dv">1</span>], 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tab_res &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">cbind</span>(qr_results[[<span class="dv">1</span>]]<span class="op">$</span>coefficients[,<span class="dv">1</span>],
+                 qr_results[[<span class="dv">2</span>]]<span class="op">$</span>coefficients[,<span class="dv">1</span>],
+                 qr_results[[<span class="dv">3</span>]]<span class="op">$</span>coefficients[,<span class="dv">1</span>],
+                 qr_results[[<span class="dv">4</span>]]<span class="op">$</span>coefficients[,<span class="dv">1</span>],
                  qr_results[[<span class="dv">5</span>]]<span class="op">$</span>coefficients[,<span class="dv">1</span>]))
 <span class="kw">names</span>(tab_res) &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;Tau_&quot;</span>,quantiles_table,<span class="st">&quot;_beta&quot;</span>)
 
-tab_ES &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">cbind</span>(qr_results[[<span class="dv">1</span>]]<span class="op">$</span>coefficients[,<span class="dv">2</span>], 
-                 qr_results[[<span class="dv">2</span>]]<span class="op">$</span>coefficients[,<span class="dv">2</span>], 
-                 qr_results[[<span class="dv">3</span>]]<span class="op">$</span>coefficients[,<span class="dv">2</span>], 
-                 qr_results[[<span class="dv">4</span>]]<span class="op">$</span>coefficients[,<span class="dv">2</span>], 
+tab_ES &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">cbind</span>(qr_results[[<span class="dv">1</span>]]<span class="op">$</span>coefficients[,<span class="dv">2</span>],
+                 qr_results[[<span class="dv">2</span>]]<span class="op">$</span>coefficients[,<span class="dv">2</span>],
+                 qr_results[[<span class="dv">3</span>]]<span class="op">$</span>coefficients[,<span class="dv">2</span>],
+                 qr_results[[<span class="dv">4</span>]]<span class="op">$</span>coefficients[,<span class="dv">2</span>],
                  qr_results[[<span class="dv">5</span>]]<span class="op">$</span>coefficients[,<span class="dv">2</span>]))
 
 <span class="kw">names</span>(tab_ES) &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;Tau_&quot;</span>,quantiles_table,<span class="st">&quot;_SE&quot;</span>)
@@ -669,24 +669,24 @@ results &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<spa
 results &lt;-<span class="st"> </span>results[,<span class="kw">sort</span>(<span class="kw">names</span>(results))]
 results &lt;-<span class="st"> </span>results[<span class="op">-</span><span class="dv">1</span>,]</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">stargazer<span class="op">::</span><span class="kw">stargazer</span>(results, <span class="dt">type=</span><span class="st">&#39;text&#39;</span>, <span class="dt">out=</span><span class="st">&quot;./images/qr_res1992.tex&quot;</span>, <span class="dt">summary =</span> <span class="ot">FALSE</span>)</code></pre></div>
-<pre><code>## 
+<pre><code>##
 ## ====================================================================================================================================
 ##          Tau_0.1_beta Tau_0.1_SE Tau_0.25_beta Tau_0.25_SE Tau_0.5_beta Tau_0.5_SE Tau_0.75_beta Tau_0.75_SE Tau_0.9_beta Tau_0.9_SE
 ## ------------------------------------------------------------------------------------------------------------------------------------
-## black      -253.656     7.917      -216.794       4.641      -199.071     3.829      -192.405       4.263      -182.087     5.684   
-## married     73.323      6.554       55.181        4.235       50.563      3.578       42.456        4.081       38.560      5.428   
-## age         45.177      4.273       36.722        2.757       34.636      2.291       31.909        2.500       33.788      3.451   
-## agesq       -0.781      0.076       -0.591        0.049       -0.530      0.041       -0.440        0.044       -0.436      0.062   
-## hsgrad      28.580      7.314       25.078        4.769       17.543      3.824       15.024        4.389       13.355      5.868   
-## somecoll    49.494      8.225       40.549        5.237       31.698      4.445       26.975        4.989       18.640      6.672   
-## collgrad    82.645      8.799       57.601        5.766       36.839      4.816       16.270        5.422       -4.663      7.477   
-## wtgain      11.776      0.167        9.905        0.119       9.134       0.103        8.838        0.118       8.576       0.157   
-## natal2      6.176       6.555        2.833        4.171       -4.477      3.673       -0.544        4.075       3.796       5.633   
-## natal3      39.434      15.115      12.679        9.600       3.967       7.234       -6.239        8.870      -25.498      10.738  
-## novisit    -388.584     44.089     -196.452      24.286      -147.230     15.300     -126.642      16.132      -101.659     17.282  
-## nosmoke    170.750      11.160      171.840       7.211      158.821      6.109       153.227       6.654      150.219      9.445   
-## cigar       -3.803      0.640       -3.519        0.466       -3.902      0.390       -4.461        0.408       -5.168      0.607   
-## boy         87.763      4.503       109.568       2.934      129.128      2.553       142.402       2.862      153.582      3.838   
+## black      -253.656     7.917      -216.794       4.641      -199.071     3.829      -192.405       4.263      -182.087     5.684
+## married     73.323      6.554       55.181        4.235       50.563      3.578       42.456        4.081       38.560      5.428
+## age         45.177      4.273       36.722        2.757       34.636      2.291       31.909        2.500       33.788      3.451
+## agesq       -0.781      0.076       -0.591        0.049       -0.530      0.041       -0.440        0.044       -0.436      0.062
+## hsgrad      28.580      7.314       25.078        4.769       17.543      3.824       15.024        4.389       13.355      5.868
+## somecoll    49.494      8.225       40.549        5.237       31.698      4.445       26.975        4.989       18.640      6.672
+## collgrad    82.645      8.799       57.601        5.766       36.839      4.816       16.270        5.422       -4.663      7.477
+## wtgain      11.776      0.167        9.905        0.119       9.134       0.103        8.838        0.118       8.576       0.157
+## natal2      6.176       6.555        2.833        4.171       -4.477      3.673       -0.544        4.075       3.796       5.633
+## natal3      39.434      15.115      12.679        9.600       3.967       7.234       -6.239        8.870      -25.498      10.738
+## novisit    -388.584     44.089     -196.452      24.286      -147.230     15.300     -126.642      16.132      -101.659     17.282
+## nosmoke    170.750      11.160      171.840       7.211      158.821      6.109       153.227       6.654      150.219      9.445
+## cigar       -3.803      0.640       -3.519        0.466       -3.902      0.390       -4.461        0.408       -5.168      0.607
+## boy         87.763      4.503       109.568       2.934      129.128      2.553       142.402       2.862      153.582      3.838
 ## ------------------------------------------------------------------------------------------------------------------------------------</code></pre>
 <p>As aforementioned in the case of a vector of 20 or 50 quantiles it is better to use a <strong>user written function</strong>. We will use this opportunity to remember how to define user written functions (even if in this example is not necessary). An example of a function is presented to highlight the important parts:</p>
 <ul>
@@ -697,32 +697,32 @@ results &lt;-<span class="st"> </span>results[<span class="op">-</span><span cla
 </ul>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">table_rq_beta_sd &lt;-<span class="st"> </span><span class="cf">function</span>(qr_obj){
         <span class="co"># The function creates a summary table from the results of the command rq()</span>
-        
+
         len &lt;-<span class="st"> </span><span class="kw">length</span>(qr_obj)
-        
+
         res_beta &lt;-<span class="st"> </span><span class="kw">c</span>()
         <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>len) {
-                res &lt;-<span class="st"> </span>qr_results[[i]]<span class="op">$</span>coefficients[,<span class="dv">1</span>] 
+                res &lt;-<span class="st"> </span>qr_results[[i]]<span class="op">$</span>coefficients[,<span class="dv">1</span>]
                 res_beta &lt;-<span class="st"> </span><span class="kw">cbind</span>(res_beta,res)
         }
-        
+
         res_se &lt;-<span class="st"> </span><span class="kw">c</span>()
         <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>len) {
-                resse &lt;-<span class="st"> </span>qr_results[[i]]<span class="op">$</span>coefficients[,<span class="dv">2</span>] 
+                resse &lt;-<span class="st"> </span>qr_results[[i]]<span class="op">$</span>coefficients[,<span class="dv">2</span>]
                 res_se &lt;-<span class="st"> </span><span class="kw">cbind</span>(res_se,resse)
         }
-        
+
         tau &lt;-<span class="st"> </span><span class="kw">c</span>()
         <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>len) {
                 tau &lt;-<span class="st"> </span><span class="kw">c</span>(tau,qr_results[[i]]<span class="op">$</span>tau)
         }
-        
+
         res_beta &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(res_beta)
         <span class="kw">names</span>(res_beta) &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;Quant_&quot;</span>,tau,<span class="st">&quot;_beta&quot;</span>)
         res_se &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(res_se)
         <span class="kw">names</span>(res_se) &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;Quant_&quot;</span>,tau,<span class="st">&quot;_se&quot;</span>)
-        
-        
+
+
         results &lt;-<span class="st"> </span><span class="kw">cbind.data.frame</span>(res_beta,res_se)
         results &lt;-<span class="st"> </span>results[, <span class="kw">order</span>(<span class="kw">names</span>(results))]
         <span class="kw">return</span>(results)
@@ -785,8 +785,8 @@ Y &lt;-<span class="st"> &quot;birwt&quot;</span>
 X &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="kw">names</span>(data[,<span class="op">-</span><span class="dv">1</span>]),<span class="dt">collapse =</span> <span class="st">&quot; + &quot;</span>)
 formula_qr &lt;-<span class="st"> </span><span class="kw">as.formula</span>(<span class="kw">paste</span>(Y, <span class="st">&quot; ~ &quot;</span>, X))
 formula_qr</code></pre></div>
-<pre><code>## birwt ~ black + married + boy + nosmoke + cigar + age + agesq + 
-##     hsgrad + somecoll + collgrad + wtgain + natal2 + natal3 + 
+<pre><code>## birwt ~ black + married + boy + nosmoke + cigar + age + agesq +
+##     hsgrad + somecoll + collgrad + wtgain + natal2 + natal3 +
 ##     novisit</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p10 &lt;-<span class="st"> </span><span class="kw">rq</span>(formula_qr,<span class="dt">tau =</span> <span class="kw">c</span>(<span class="fl">0.1</span>), <span class="dt">data =</span> data, <span class="dt">method =</span> <span class="st">&#39;fn&#39;</span>)
 p25 &lt;-<span class="st"> </span><span class="kw">rq</span>(formula_qr,<span class="dt">tau =</span> <span class="kw">c</span>(<span class="fl">0.25</span>), <span class="dt">data =</span> data, <span class="dt">method =</span> <span class="st">&#39;fn&#39;</span>)
@@ -795,7 +795,7 @@ p75 &lt;-<span class="st"> </span><span class="kw">rq</span>(formula_qr,<span cl
 p90 &lt;-<span class="st"> </span><span class="kw">rq</span>(formula_qr,<span class="dt">tau =</span> <span class="kw">c</span>(<span class="fl">0.9</span>), <span class="dt">data =</span> data, <span class="dt">method =</span> <span class="st">&#39;fn&#39;</span>)
 ols &lt;-<span class="st"> </span><span class="kw">lm</span>(formula_qr, <span class="dt">data =</span> data)</code></pre></div>
 <p>Finally, we put the results in a paper format using LaTeX syntax and ‘stargazer’ functionality. The table presented shows the results for the QR estimation.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stargazer</span>(p10,p25,p50,p75,p90,ols, <span class="dt">title =</span> <span class="st">&quot;Quantile Regression Results&quot;</span>, 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stargazer</span>(p10,p25,p50,p75,p90,ols, <span class="dt">title =</span> <span class="st">&quot;Quantile Regression Results&quot;</span>,
           <span class="dt">type=</span><span class="kw">ifelse</span>(knitr<span class="op">::</span><span class="kw">is_latex_output</span>(),<span class="st">&quot;latex&quot;</span>,<span class="st">&quot;html&quot;</span>), <span class="dt">out =</span><span class="st">&quot;./images/qr_rep_tab_92.tex&quot;</span>)</code></pre></div>
 <table style="text-align:center">
 <caption>
