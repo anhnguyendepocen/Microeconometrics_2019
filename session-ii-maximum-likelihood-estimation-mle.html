@@ -31,7 +31,7 @@
   
   
 <link rel="prev" href="session-i-quantile-regression.html"/>
-
+<link rel="next" href="session-iii-survival-models-in-r-cox-and-weibull.html"/>
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -143,6 +143,12 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="3.3" data-path="session-ii-maximum-likelihood-estimation-mle.html"><a href="session-ii-maximum-likelihood-estimation-mle.html#example-ii---structural-estimation"><i class="fa fa-check"></i><b>3.3</b> Example II - Structural estimation</a></li>
 <li class="chapter" data-level="3.4" data-path="session-ii-maximum-likelihood-estimation-mle.html"><a href="session-ii-maximum-likelihood-estimation-mle.html#references-1"><i class="fa fa-check"></i><b>3.4</b> References</a></li>
 </ul></li>
+<li class="chapter" data-level="4" data-path="session-iii-survival-models-in-r-cox-and-weibull.html"><a href="session-iii-survival-models-in-r-cox-and-weibull.html"><i class="fa fa-check"></i><b>4</b> Session III - Survival models in R - Cox and Weibull</a><ul>
+<li class="chapter" data-level="4.1" data-path="session-iii-survival-models-in-r-cox-and-weibull.html"><a href="session-iii-survival-models-in-r-cox-and-weibull.html#introduction-2"><i class="fa fa-check"></i><b>4.1</b> Introduction</a></li>
+<li class="chapter" data-level="4.2" data-path="session-iii-survival-models-in-r-cox-and-weibull.html"><a href="session-iii-survival-models-in-r-cox-and-weibull.html#example-i---cox-proportional-hazard-model"><i class="fa fa-check"></i><b>4.2</b> Example I - Cox proportional hazard model</a></li>
+<li class="chapter" data-level="4.3" data-path="session-iii-survival-models-in-r-cox-and-weibull.html"><a href="session-iii-survival-models-in-r-cox-and-weibull.html#example-ii-weibull-regression"><i class="fa fa-check"></i><b>4.3</b> Example II: Weibull regression</a></li>
+<li class="chapter" data-level="4.4" data-path="session-iii-survival-models-in-r-cox-and-weibull.html"><a href="session-iii-survival-models-in-r-cox-and-weibull.html#references-2"><i class="fa fa-check"></i><b>4.4</b> References</a></li>
+</ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
 
@@ -211,7 +217,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </blockquote>
 <div id="estimation" class="section level4">
 <h4><span class="header-section-number">3.2.1.1</span> Estimation</h4>
-<p>You can acces the <a href="https://www.aeaweb.org/aer/data/10605/P2016_1068_data.zip">data</a> and the <a href="https://pubs.aeaweb.org/doi/pdfplus/10.1257/aer.p20161068">paper</a> in the provided links. Download and unzip the information. The file also contains a companion STATA code to reproduce the tables in the paper. Unzip the information and load the dataset in R using the <code>haven</code> library <span class="citation">(Wickham and Miller 2018)</span>:</p>
+<p>You can acces the <a href="https://www.aeaweb.org/aer/data/10605/P2016_1068_data.zip">data</a> and the <a href="https://pubs.aeaweb.org/doi/pdfplus/10.1257/aer.p20161068">paper</a> in the provided links. Download and unzip the information. The file also contains a companion STATA code to reproduce the tables in the paper. Unzip the information and load the dataset in R using the <code>haven</code> library <span class="citation">(Wickham and Miller 2019)</span>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_mil &lt;-<span class="st"> </span><span class="kw">read_dta</span>(<span class="st">&quot;YOUR PATH GOES HERE&quot;</span>)</code></pre></div>
 <p>To reproduce table 1 from the paper we need to filter the information for 2008, as it is the year considered in the main analisys.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data_mil  &lt;-<span class="st"> </span>data_mil[data_mil<span class="op">$</span>year <span class="op">==</span><span class="st"> </span><span class="dv">2008</span>,]</code></pre></div>
@@ -275,22 +281,22 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>We start by writing the function. We call the function <em>‘LLcalc’</em>, and define the inputs in parentheses. One useful function that we use in the first line is <code>model.matrix()</code>. This function takes a formula and extract from the whole dataset the related matrix of observations including the vector of ones of the intercept, dummies, and interaction terms.</p>
 <p>We are going to compute the value of <span class="math inline">\(\mu\)</span> and then the value of the individual contribution to the log-likelihood. Then, we just sum and flip sign, as the optimizer minimizes by default. There is one technical detail that we are addressing using the package <code>Rmpfr</code>, which allow to store big numbers in 128 bits (as the factorail of 400) <span class="citation">(Maechler 2019)</span>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">LLcalc &lt;-<span class="st"> </span><span class="cf">function</span>(theta, formula, data){
-        ### Calculate the log-likelihood of a Poisson regression, 
-        ### given a vector of parameters (1), 
-        ### a relationship ()formula (2) 
+        ### Calculate the log-likelihood of a Poisson regression,
+        ### given a vector of parameters (1),
+        ### a relationship ()formula (2)
         ### and a dataset (type: dataframe)
-        
+
         rhs &lt;-<span class="st"> </span><span class="kw">model.matrix</span>(formula, <span class="dt">data =</span> data)
         <span class="kw">colnames</span>(rhs)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;Intercept&quot;</span>
         Y &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(data[<span class="kw">rownames</span>(rhs),<span class="kw">toString</span>(formula[[<span class="dv">2</span>]])])
-        <span class="co"># Expected values \mu </span>
+        <span class="co"># Expected values \mu</span>
         mu &lt;-<span class="st"> </span><span class="kw">exp</span>(rhs <span class="op">%*%</span><span class="st"> </span>theta)
         <span class="co"># Value of the log likelihood</span>
         LL &lt;-<span class="st"> </span>Y <span class="op">*</span><span class="st"> </span><span class="kw">log</span>(mu)<span class="op">-</span>mu<span class="op">-</span><span class="kw">as.numeric</span>(<span class="kw">log</span>(<span class="kw">gamma</span>(<span class="kw">as</span>(Y<span class="op">+</span><span class="dv">1</span>,<span class="st">&quot;mpfr&quot;</span>))))
-        
+
         <span class="co">#print(cbind(colnames(rhs),round(theta,3)))</span>
         <span class="kw">return</span>(<span class="op">-</span><span class="kw">sum</span>(LL, <span class="dt">na.rm =</span> T))
-        
+
 }</code></pre></div>
 <p>To check whether the function works properly we feed it the data, a random <span class="math inline">\(\theta\)</span>, and the formula of the first column of table I in the paper.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">theta_test &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">4</span>)
@@ -332,7 +338,7 @@ se_rob &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="k
                <span class="kw">sqrt</span>(<span class="kw">diag</span>(sandwich<span class="op">::</span><span class="kw">vcovHC.default</span>(r2,<span class="dt">type =</span> <span class="st">&quot;HC0&quot;</span>))),
                <span class="kw">sqrt</span>(<span class="kw">diag</span>(sandwich<span class="op">::</span><span class="kw">vcovHC.default</span>(r3,<span class="dt">type =</span> <span class="st">&quot;HC0&quot;</span>))),
                <span class="kw">sqrt</span>(<span class="kw">diag</span>(sandwich<span class="op">::</span><span class="kw">vcovHC.default</span>(r4,<span class="dt">type =</span> <span class="st">&quot;HC0&quot;</span>))))</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">stargazer<span class="op">::</span><span class="kw">stargazer</span>(r1,r2,r3,r4, <span class="dt">title =</span> <span class="st">&quot;Table 1 - Poisson regression&quot;</span>, 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">stargazer<span class="op">::</span><span class="kw">stargazer</span>(r1,r2,r3,r4, <span class="dt">title =</span> <span class="st">&quot;Table 1 - Poisson regression&quot;</span>,
           <span class="dt">type=</span><span class="kw">ifelse</span>(knitr<span class="op">::</span><span class="kw">is_latex_output</span>(),<span class="st">&quot;latex&quot;</span>,<span class="st">&quot;html&quot;</span>), <span class="dt">se =</span> se_rob, <span class="dt">out =</span> <span class="st">&quot;./images/RB_T_I.tex&quot;</span>)</code></pre></div>
 <table style="text-align:center">
 <caption>
@@ -1036,7 +1042,7 @@ employed<span class="op">$</span>PEHRUSL1       &lt;-<span class="st"> </span><s
 employed<span class="op">$</span>GESTFIPS       &lt;-<span class="st"> </span><span class="kw">apply</span>(data,<span class="dv">1</span>, <span class="cf">function</span>(x) <span class="kw">substr</span>(<span class="kw">toString</span>(x),<span class="dv">93</span>,<span class="dv">94</span>))</code></pre></div>
 <p>Reading the documentation we identify that the invalid cases are coded <span class="math inline">\(0\)</span> or negative values <span class="math inline">\(-1,-2,\dots\)</span>. We reclassify this coded infromation as <code>NA</code>, a <em>not available</em> or <em>missing value</em>. We are going to keep the observations that are from the outgoing rotations (have earnings information). After that we are going to filter the valid hourly wages and convert the weekkly wages to hours using the number of hours. We are going to keep only the people that have this information. We are also going to take the right number of decimal for the variables that specify it. We are going to keep only the observations that are above the legal federal minimum wage of <span class="math inline">\(7.5\)</span> USD, and we are going to trim the data at the percentile 99.9%.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">employed[employed<span class="op">&lt;=</span><span class="dv">0</span>] &lt;-<span class="st"> </span><span class="ot">NA</span>
-        
+
 employed &lt;-<span class="st"> </span>employed[<span class="kw">which</span>(employed<span class="op">$</span>HRMIS <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">4</span>,<span class="dv">8</span>)),]
 employed &lt;-<span class="st"> </span>employed[<span class="kw">which</span>(employed<span class="op">$</span>PEERNPER <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>),]
 employed &lt;-<span class="st"> </span>employed[<span class="op">-</span><span class="kw">which</span>(employed<span class="op">$</span>PRERNHLY <span class="op">==</span><span class="st"> </span><span class="dv">9999</span>),]
@@ -1072,7 +1078,7 @@ unemployed &lt;-<span class="st"> </span>unemployed[<span class="kw">which</span
 unemployed &lt;-<span class="st"> </span>unemployed[<span class="kw">which</span>(unemployed<span class="op">$</span>RUNEDUR <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>),]
 unemployed<span class="op">$</span>duration_U &lt;-<span class="st"> </span>unemployed<span class="op">$</span>RUNEDUR<span class="op">/</span><span class="fl">4.333</span>
 unemployed &lt;-<span class="st"> </span>unemployed[,<span class="kw">c</span>(<span class="st">&quot;GESTFIPS&quot;</span>,<span class="st">&quot;duration_U&quot;</span>)]
-unemployed<span class="op">$</span>wages &lt;-<span class="st"> </span><span class="dv">0</span> 
+unemployed<span class="op">$</span>wages &lt;-<span class="st"> </span><span class="dv">0</span>
 unemployed &lt;-<span class="st"> </span>unemployed[,<span class="kw">c</span>(<span class="st">&quot;GESTFIPS&quot;</span>,<span class="st">&quot;wages&quot;</span>, <span class="st">&quot;duration_U&quot;</span>)]</code></pre></div>
 <p>As a final step, we merge the two dataset:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data &lt;-<span class="st"> </span><span class="kw">rbind</span>(employed,unemployed)</code></pre></div>
@@ -1103,38 +1109,36 @@ unemployed &lt;-<span class="st"> </span>unemployed[,<span class="kw">c</span>(<
 <p>Now we are going to code the log-likelihood function we recovered using the same procedure as in the previous example:</p>
 <p>First we are going to code each of the parameters and the data as inputs in the function. Then we are going to code the likelihood using the definition derived earlier.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">LLfnct_mle &lt;-<span class="st"> </span><span class="cf">function</span>(alambda,aeta,amu,asigma, data){
-        
-        
-        lambda =<span class="st"> </span><span class="kw">exp</span>(alambda) 
-        eta    =<span class="st"> </span><span class="kw">exp</span>(aeta) 
+
+        lambda =<span class="st"> </span><span class="kw">exp</span>(alambda)
+        eta    =<span class="st"> </span><span class="kw">exp</span>(aeta)
         mu     =<span class="st"> </span>amu
-        sigma  =<span class="st"> </span><span class="kw">exp</span>(asigma) 
-        
+        sigma  =<span class="st"> </span><span class="kw">exp</span>(asigma)
+
         w_star &lt;-<span class="st"> </span><span class="kw">min</span>(data[<span class="kw">which</span>(data<span class="op">$</span>wages <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>),]<span class="op">$</span>wages)
-        
-        
+
         h_u &lt;-<span class="st"> </span>lambda <span class="op">*</span><span class="st"> </span><span class="kw">surv</span>(w_star, mu, sigma)
         n &lt;-<span class="st"> </span><span class="kw">nrow</span>(data)
         n_u &lt;-<span class="st">  </span><span class="kw">nrow</span>(data[<span class="kw">which</span>(data<span class="op">$</span>duration_U <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>),])
         n_e &lt;-<span class="st"> </span>(n<span class="op">-</span>n_u)
-        
+
         LL &lt;-<span class="st">   </span>n <span class="op">*</span><span class="st"> </span><span class="kw">log</span>(h_u) <span class="op">-</span>
 <span class="st">                </span>n_e <span class="op">*</span><span class="st"> </span><span class="kw">log</span>(<span class="kw">surv</span>(w_star, mu, sigma)) <span class="op">-</span>
 <span class="st">                </span>h_u <span class="op">*</span><span class="st"> </span><span class="kw">sum</span>(data<span class="op">$</span>duration_U) <span class="op">+</span>
 <span class="st">                </span>n_u <span class="op">*</span><span class="st"> </span><span class="kw">log</span>(eta) <span class="op">+</span>
 <span class="st">                </span><span class="kw">sum</span>(<span class="kw">log</span>(<span class="kw">lognorm</span>(data[<span class="kw">which</span>(data<span class="op">$</span>wages<span class="op">&gt;</span><span class="dv">0</span>),]<span class="op">$</span>wages,mu,sigma))) <span class="op">-</span>
 <span class="st">                </span>n_e <span class="op">*</span><span class="st"> </span><span class="kw">log</span>(eta <span class="op">+</span><span class="st"> </span>h_u)
-        
+
         <span class="co">#print(cbind(c(&quot;lambda = &quot;,&quot;eta = &quot;,&quot;mu = &quot;,&quot;sigma = &quot;),c(lambda,eta,mu,sigma)))</span>
         <span class="kw">return</span>(<span class="op">-</span>LL)
-        
+
 }</code></pre></div>
 <p>After that we just have to set up the maximizer and feed it the function:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m0 &lt;-<span class="st"> </span><span class="kw">mle2</span>(LLfnct_mle, 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m0 &lt;-<span class="st"> </span><span class="kw">mle2</span>(LLfnct_mle,
            <span class="dt">start =</span> <span class="kw">list</span>(<span class="dt">alambda =</span><span class="op">-</span><span class="dv">1</span>,
-                        <span class="dt">aeta =</span> <span class="op">-</span><span class="dv">1</span>, 
+                        <span class="dt">aeta =</span> <span class="op">-</span><span class="dv">1</span>,
                         <span class="dt">amu =</span> <span class="dv">3</span>,
-                        <span class="dt">asigma =</span> <span class="op">-</span><span class="dv">1</span>), 
+                        <span class="dt">asigma =</span> <span class="op">-</span><span class="dv">1</span>),
            <span class="dt">data =</span> <span class="kw">list</span>(<span class="dt">data =</span> data_sub),
            <span class="dt">optimizer =</span> <span class="st">&quot;nlminb&quot;</span>)
 
@@ -1153,7 +1157,7 @@ vcov_mle &lt;-<span class="st"> </span><span class="kw">solve</span>(fisher_info
 prop_sigma&lt;-<span class="kw">sqrt</span>(<span class="kw">c</span>(lambda<span class="op">^</span><span class="dv">2</span>,eta<span class="op">^</span><span class="dv">2</span>,mu<span class="op">^</span><span class="dv">2</span>,sigma<span class="op">^</span><span class="dv">2</span>) <span class="op">*</span><span class="st"> </span><span class="kw">diag</span>(vcov_mle))
 <span class="kw">names</span>(prop_sigma) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;lambda&quot;</span>,<span class="st">&quot;eta&quot;</span>,<span class="st">&quot;mu&quot;</span>,<span class="st">&quot;sigma&quot;</span>)</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stargazer</span>(<span class="kw">cbind</span>(<span class="st">&quot;parameter&quot;</span> =<span class="st"> </span><span class="kw">names</span>(prop_sigma), <span class="st">&quot;theta&quot;</span> =<span class="kw">c</span>(lambda,eta,mu,sigma), prop_sigma),
-          <span class="dt">title =</span> <span class="st">&quot;Model parameters MLE - Nevada (Jan 2019)&quot;</span>, 
+          <span class="dt">title =</span> <span class="st">&quot;Model parameters MLE - Nevada (Jan 2019)&quot;</span>,
           <span class="dt">type=</span><span class="kw">ifelse</span>(knitr<span class="op">::</span><span class="kw">is_latex_output</span>(),<span class="st">&quot;latex&quot;</span>,<span class="st">&quot;html&quot;</span>), <span class="dt">out =</span> <span class="st">&quot;./images/SE_Nevada.tex&quot;</span>)</code></pre></div>
 <table style="text-align:center">
 <caption>
@@ -1247,53 +1251,6 @@ sigma
 <h2><span class="header-section-number">3.4</span> References</h2>
 <p>This material was possible thanks to the slides of David MARGOLIS (in PSE resources), the course of C. FLinn at CCA 2017, and <a href="https://python.quantecon.org/mle.html">QuantEcon MLE</a>.</p>
 
-<div id="refs" class="references">
-<div>
-<p>Abrevaya, Jason. 2002. “The Effects of Demographics and Maternal Behavior on the Distribution of Birth Outcomes.” In <em>Economic Applications of Quantile Regression</em>, 247–57. Springer.</p>
-</div>
-<div>
-<p>Bolker, Ben, and R Development Core Team. 2017. <em>Bbmle: Tools for General Maximum Likelihood Estimation</em>. <a href="https://CRAN.R-project.org/package=bbmle" class="uri">https://CRAN.R-project.org/package=bbmle</a>.</p>
-</div>
-<div>
-<p>Dowle, Matt, and Arun Srinivasan. 2019. <em>Data.table: Extension of ‘Data.frame‘</em>. <a href="https://CRAN.R-project.org/package=data.table" class="uri">https://CRAN.R-project.org/package=data.table</a>.</p>
-</div>
-<div>
-<p>Firpo, Sergio, Nicole M Fortin, and Thomas Lemieux. 2009. “Unconditional Quantile Regressions.” <em>Econometrica</em> 77 (3). Wiley Online Library: 953–73.</p>
-</div>
-<div>
-<p>Firpo, Sergio, Nicole Fortin, and Thomas Lemieux. 2018. “Decomposing Wage Distributions Using Recentered Influence Function Regressions.” <em>Econometrics</em> 6 (2). Multidisciplinary Digital Publishing Institute: 28.</p>
-</div>
-<div>
-<p>Flinn, Christopher, and James Heckman. 1982. “New Methods for Analyzing Structural Models of Labor Force Dynamics.” <em>Journal of Econometrics</em> 18 (1). Elsevier: 115–68.</p>
-</div>
-<div>
-<p>Hlavac, Marek. 2018. <em>Stargazer: Well-Formatted Regression and Summary Statistics Tables</em>. <a href="https://CRAN.R-project.org/package=stargazer" class="uri">https://CRAN.R-project.org/package=stargazer</a>.</p>
-</div>
-<div>
-<p>Koenker, Roger, and Kevin F Hallock. 2001. “Quantile Regression.” <em>Journal of Economic Perspectives</em> 15 (4): 143–56.</p>
-</div>
-<div>
-<p>Machado, José AF, and José Mata. 2005. “Counterfactual Decomposition of Changes in Wage Distributions Using Quantile Regression.” <em>Journal of Applied Econometrics</em> 20 (4). Wiley Online Library: 445–65.</p>
-</div>
-<div>
-<p>Maechler, Martin. 2019. <em>Rmpfr: R Mpfr - Multiple Precision Floating-Point Reliable</em>. <a href="https://CRAN.R-project.org/package=Rmpfr" class="uri">https://CRAN.R-project.org/package=Rmpfr</a>.</p>
-</div>
-<div>
-<p>Treisman, Daniel. 2016. “Russia’s Billionaires.” <em>American Economic Review</em> 106 (5): 236–41.</p>
-</div>
-<div>
-<p>Wickham, Hadley, and Evan Miller. 2018. <em>Haven: Import and Export ’Spss’, ’Stata’ and ’Sas’ Files</em>. <a href="https://CRAN.R-project.org/package=haven" class="uri">https://CRAN.R-project.org/package=haven</a>.</p>
-</div>
-<div>
-<p>Wickham, Hadley, Winston Chang, Lionel Henry, Thomas Lin Pedersen, Kohske Takahashi, Claus Wilke, Kara Woo, and Hiroaki Yutani. 2019. <em>Ggplot2: Create Elegant Data Visualisations Using the Grammar of Graphics</em>. <a href="https://CRAN.R-project.org/package=ggplot2" class="uri">https://CRAN.R-project.org/package=ggplot2</a>.</p>
-</div>
-<div>
-<p>Wickham, Hadley, Romain François, Lionel Henry, and Kirill Müller. 2018. <em>Dplyr: A Grammar of Data Manipulation</em>. <a href="https://CRAN.R-project.org/package=dplyr" class="uri">https://CRAN.R-project.org/package=dplyr</a>.</p>
-</div>
-<div>
-<p>Wickham, Hadley, Jim Hester, and Romain Francois. 2017. <em>Readr: Read Rectangular Text Data</em>. <a href="https://CRAN.R-project.org/package=readr" class="uri">https://CRAN.R-project.org/package=readr</a>.</p>
-</div>
-</div>
 </div>
 </div>
 
@@ -1308,8 +1265,8 @@ This book is in <b><a href="open.html#open">Open Review</a></b>. I want your fee
           </div>
         </div>
       </div>
-<a href="session-i-quantile-regression.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-
+<a href="session-i-quantile-regression.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="session-iii-survival-models-in-r-cox-and-weibull.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
