@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 4 Session III - Survival models in R - Cox and Weibull | Microeconometrics - e-Notes: Practice guide using R</title>
+  <meta name="description" content="This course notes are an interactive e-material for the Microeconometrics course in the master APE in Paris School of Economics. The aim of this notes is to provide an e-learning material to apply the theorical concepts of the class." />
+  <meta name="generator" content="bookdown 0.13 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 4 Session III - Survival models in R - Cox and Weibull | Microeconometrics - e-Notes: Practice guide using R" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="This course notes are an interactive e-material for the Microeconometrics course in the master APE in Paris School of Economics. The aim of this notes is to provide an e-learning material to apply the theorical concepts of the class." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 4 Session III - Survival models in R - Cox and Weibull | Microeconometrics - e-Notes: Practice guide using R" />
+  
+  <meta name="twitter:description" content="This course notes are an interactive e-material for the Microeconometrics course in the master APE in Paris School of Economics. The aim of this notes is to provide an e-learning material to apply the theorical concepts of the class." />
+  
+
+<meta name="author" content="Jaime MONTANA" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="session-ii-maximum-likelihood-estimation-mle.html"/>
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+<script async defer src="https://hypothes.is/embed.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZRYRM10F86"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-ZRYRM10F86');
+</script>
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Microeconometrics - Practice guide using R</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#general-info"><i class="fa fa-check"></i><b>1.1</b> General Info</a><ul>
+<li class="chapter" data-level="1.1.1" data-path="index.html"><a href="index.html#contact-information"><i class="fa fa-check"></i><b>1.1.1</b> Contact information</a></li>
+</ul></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#objective"><i class="fa fa-check"></i><b>1.2</b> Objective</a></li>
+<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#prerequisites"><i class="fa fa-check"></i><b>1.3</b> Prerequisites</a></li>
+<li class="chapter" data-level="1.4" data-path="index.html"><a href="index.html#course-structure"><i class="fa fa-check"></i><b>1.4</b> Course structure</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html"><i class="fa fa-check"></i><b>2</b> Session I - Quantile regression</a><ul>
+<li class="chapter" data-level="2.1" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#objective-1"><i class="fa fa-check"></i><b>2.1</b> Objective</a></li>
+<li class="chapter" data-level="2.2" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#quantile-regression"><i class="fa fa-check"></i><b>2.2</b> Quantile Regression</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#geometric-interpretation"><i class="fa fa-check"></i><b>2.2.1</b> Geometric interpretation</a></li>
+</ul></li>
+<li class="chapter" data-level="2.3" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#replication-of-a-paper-using-quantile-regression"><i class="fa fa-check"></i><b>2.3</b> Replication of a paper using quantile regression</a><ul>
+<li class="chapter" data-level="2.3.1" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#quantile-regression-visualization"><i class="fa fa-check"></i><b>2.3.1</b> Quantile Regression visualization</a></li>
+</ul></li>
+<li class="chapter" data-level="2.4" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#exercises"><i class="fa fa-check"></i><b>2.4</b> Exercises</a><ul>
+<li class="chapter" data-level="2.4.1" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#proposed-exercise-1"><i class="fa fa-check"></i><b>2.4.1</b> Proposed exercise 1</a></li>
+<li class="chapter" data-level="2.4.2" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#proposed-exercise-2"><i class="fa fa-check"></i><b>2.4.2</b> Proposed exercise 2</a></li>
+</ul></li>
+<li class="chapter" data-level="2.5" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#more-on-quantiles"><i class="fa fa-check"></i><b>2.5</b> More on quantiles</a></li>
+<li class="chapter" data-level="2.6" data-path="session-i-quantile-regression.html"><a href="session-i-quantile-regression.html#references"><i class="fa fa-check"></i><b>2.6</b> References</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="session-ii-maximum-likelihood-estimation-mle.html"><a href="session-ii-maximum-likelihood-estimation-mle.html"><i class="fa fa-check"></i><b>3</b> Session II - Maximum Likelihood Estimation (MLE)</a><ul>
+<li class="chapter" data-level="3.1" data-path="session-ii-maximum-likelihood-estimation-mle.html"><a href="session-ii-maximum-likelihood-estimation-mle.html#introduction-1"><i class="fa fa-check"></i><b>3.1</b> Introduction</a></li>
+<li class="chapter" data-level="3.2" data-path="session-ii-maximum-likelihood-estimation-mle.html"><a href="session-ii-maximum-likelihood-estimation-mle.html#maximum-likelihood-estimator"><i class="fa fa-check"></i><b>3.2</b> Maximum likelihood estimator</a><ul>
+<li class="chapter" data-level="3.2.1" data-path="session-ii-maximum-likelihood-estimation-mle.html"><a href="session-ii-maximum-likelihood-estimation-mle.html#poisson-regression"><i class="fa fa-check"></i><b>3.2.1</b> Poisson regression</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="session-ii-maximum-likelihood-estimation-mle.html"><a href="session-ii-maximum-likelihood-estimation-mle.html#example-ii---structural-estimation"><i class="fa fa-check"></i><b>3.3</b> Example II - Structural estimation</a></li>
+<li class="chapter" data-level="3.4" data-path="session-ii-maximum-likelihood-estimation-mle.html"><a href="session-ii-maximum-likelihood-estimation-mle.html#references-1"><i class="fa fa-check"></i><b>3.4</b> References</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="session-iii-survival-models-in-r-cox-and-weibull.html"><a href="session-iii-survival-models-in-r-cox-and-weibull.html"><i class="fa fa-check"></i><b>4</b> Session III - Survival models in R - Cox and Weibull</a><ul>
+<li class="chapter" data-level="4.1" data-path="session-iii-survival-models-in-r-cox-and-weibull.html"><a href="session-iii-survival-models-in-r-cox-and-weibull.html#introduction-2"><i class="fa fa-check"></i><b>4.1</b> Introduction</a></li>
+<li class="chapter" data-level="4.2" data-path="session-iii-survival-models-in-r-cox-and-weibull.html"><a href="session-iii-survival-models-in-r-cox-and-weibull.html#example-i---cox-proportional-hazard-model"><i class="fa fa-check"></i><b>4.2</b> Example I - Cox proportional hazard model</a></li>
+<li class="chapter" data-level="4.3" data-path="session-iii-survival-models-in-r-cox-and-weibull.html"><a href="session-iii-survival-models-in-r-cox-and-weibull.html#example-ii-weibull-regression"><i class="fa fa-check"></i><b>4.3</b> Example II: Weibull regression</a></li>
+<li class="chapter" data-level="4.4" data-path="session-iii-survival-models-in-r-cox-and-weibull.html"><a href="session-iii-survival-models-in-r-cox-and-weibull.html#references-2"><i class="fa fa-check"></i><b>4.4</b> References</a></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Microeconometrics - e-Notes: Practice guide using R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="session-iii---survival-models-in-r---cox-and-weibull" class="section level1">
+<h1><span class="header-section-number">Chapter 4</span> Session III - Survival models in R - Cox and Weibull</h1>
+<p><img src="images/1200px-Logo_pse_petit.png" width="90%" style="display: block; margin: auto;" /></p>
+<div id="introduction-2" class="section level2">
+<h2><span class="header-section-number">4.1</span> Introduction</h2>
+<p>In this third session of the microeconometrics tutorial we are going to learn how to implement <em>duration models</em> using R. We are going to divide the tutorial in 3 parts:</p>
+<ul>
+<li><p>The first part consist in a brief explanation of the intuition behind the estimation method. This first part is embeded along the two</p></li>
+<li><p>The second part is devoted to replication of the results of a paper on terrorism by rebel groups and the duration of war, by <a href="https://polisci.columbia.edu/content/virginia-page-fortna">Virginia Fortna</a>. This paper is publihed in a political science journal, and the paper is interesting by the relevance of the topic, the method, and I think is also important to remark that the approach and methods of the course are not only relevant for economics. The author uses in her paper two methods that are relevant for this course, the <strong>Cox proportional hazard model</strong>. In this part I will also present the basics on the use of <code>ggplot2</code> for doing visualizations.</p></li>
+<li><p>The third part we are going to replicate the first columns of an IO paper using a <strong>Weibull duration analysis</strong>. The paper was published in the <em>American Economic Journal</em> 2013, and asess the problem of the time of failure of establishments cnsidering the distance from the Headquarters. The paper was written by <a href="https://tippie.uiowa.edu/people/arturs-kalnins">Arturs Kalnins</a> and <a href="https://michiganross.umich.edu/faculty-research/faculty/francine-lafontaine">Francine Lafontaine</a>.</p></li>
+</ul>
+<p>In the last tutorial we focus on the MLE, and how to build the functions from scratch. We learned how to derive the likelihood, set the optimization problem and retrieve the parameters and the standard errors from custom functions using R. During this tutorial we are not going to use the custom function approach, and we will just use build in functions from retrieving the estimates. Just remember the procedure that is behind, and how the software is finding the estimates.</p>
+</div>
+<div id="example-i---cox-proportional-hazard-model" class="section level2">
+<h2><span class="header-section-number">4.2</span> Example I - Cox proportional hazard model</h2>
+<p>For this part we are going to use replicate <a href="https://polisci.columbia.edu/sites/default/files/content/pdfs/Publications/Fortna/Journal%20Articles/Fortna%20IO%202015%20Final.pdf"><em>“Do Terrorists Win? Rebels Use of Terrorism and Civil War Outcomes”</em></a> by Virginia Fortna. The paper asses the outcomes of terrorism in the evolution of wars between governments and rebels groups; to do so it compares the outcomes between conflicts that uses terrorism as a tactic agains other tactics. The paper presents the following hypothesis <span class="citation">(Fortna 2015)</span>:</p>
+<ul>
+<li><p><em>“H1: Terrorist rebels are less likely than nonterrorist rebels to achieve military victory.”</em></p></li>
+<li><p><em>“H2: Rebels using terrorism are less likely than those who eschew terrorism to achieve negotiated settlements.”</em></p></li>
+<li><p><em>“H3: Wars involving terrorist rebels are likely to last longer than those involving nonterrorist rebels.”</em></p></li>
+<li><p><em>“H4: Terrorism will be more effective against democratic governments than against nondemocratic governments.”</em></p></li>
+</ul>
+<p>The data for this exercise can be found <a href="http://iojournal.org/wp-content/uploads/2015/05/FortnaReplicationData.dta">here in STATA format</a> or here in <a href="https://drive.google.com/open?id=1V1fbhIoiUQZnm3vfFginbQhBiz-hpEAl">CSV format</a>. Proceed to download the data and to load the data to you R session. Since the data is not very big we are going to use the <code>readr</code> package <span class="citation">(<span class="citeproc-not-found" data-reference-id="readr"><strong>???</strong></span>)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(readr)
+data &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;YOUR PATH GOES HERE&quot;</span>)</code></pre></div>
+<p>The first thing we are going to do is to replicate Figure 2 of the paper. The figure presents the share of terrorist groups by <em>‘war aims’</em> for each of the 104 groups in the data.</p>
+<p>The data used in the study is an extended version (untill 2009) of the Uppsala-PRIO Armed Conflict Data merged with time varing characteristics for these 104 armed groups comming from Cunningham, Gleditsch, and Salehyan’s Non-State Actor data set. The categorization of terrorist comes from the *Stanton’s coding of “high casualty terrorism,” a measure of a group’s systematic use of small-scale bombs to attack unambiguously civilian targets.“*.</p>
+<p>The categories of ‘war aims’ are constructed from aims of the groups.</p>
+<ul>
+<li><p>The <strong>moderate</strong> are the groups that don’t intend to transform society neither independence.</p></li>
+<li><p>The <strong>secessionist</strong> are the groups that the principal cause for war is the independence.</p></li>
+<li><p>The <strong>Transform society</strong> group are the groups that have as objective the transofrmation of society.</p></li>
+</ul>
+<p>Given that in the database there is a ‘flag’ for the first observation, we are going to use that to plot the graph. First we categorize in a variable of ‘war aims’ (<code>wa_pt</code>) all the cases.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data<span class="op">$</span>wa_pt &lt;-<span class="st"> </span><span class="kw">ifelse</span>(data<span class="op">$</span>independenceC<span class="op">==</span><span class="dv">0</span> <span class="op">&amp;</span><span class="st"> </span>data<span class="op">$</span>transformC<span class="op">==</span><span class="dv">0</span> <span class="op">&amp;</span><span class="st"> </span>data<span class="op">$</span>firstob<span class="op">==</span><span class="dv">1</span>, <span class="st">&quot;Moderate&quot;</span>, <span class="ot">NA</span>)
+data[<span class="kw">which</span>(data<span class="op">$</span>independenceC<span class="op">==</span><span class="dv">1</span> <span class="op">&amp;</span><span class="st"> </span>data<span class="op">$</span>firstob<span class="op">==</span><span class="dv">1</span>),]<span class="op">$</span>wa_pt &lt;-<span class="st"> &quot;Secessionist&quot;</span>
+data[<span class="kw">which</span>(data<span class="op">$</span>transformC<span class="op">==</span><span class="dv">1</span> <span class="op">&amp;</span><span class="st"> </span>data<span class="op">$</span>firstob<span class="op">==</span><span class="dv">1</span>),]<span class="op">$</span>wa_pt &lt;-<span class="st"> &quot;Transform Society&quot;</span></code></pre></div>
+<p>hen we are going to build a proportion table with all the cases so we can compare and see that we have the right result and proceed to do the ploting. We construct for this matter a two way table and then we include the proportions. Given that we are interested in the proportons by group, we include the margin of the second element of the table (columns). If we don’t include these we would have the absolute proportion, that is difficult to interpret in this case.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">twt_terror_wa &lt;-<span class="st"> </span><span class="kw">table</span>(data<span class="op">$</span>HCTrebels, data<span class="op">$</span>wa_pt)
+<span class="kw">prop.table</span>(twt_terror_wa, <span class="dt">margin =</span> <span class="dv">2</span>)</code></pre></div>
+<pre><code>##    
+##       Moderate Secessionist Transform Society
+##   0 0.96666667   0.70000000        0.66666667
+##   1 0.03333333   0.30000000        0.33333333</code></pre>
+<p>In order to plot this we are going to use ggplot [@]. We have to specify the followin elements:</p>
+<ul>
+<li><p>data</p></li>
+<li><p>mapping. In this case the aestethics of the mapping of the data. This mean that in this part you poin what variable should be treted as ‘x’ or ‘y’.</p></li>
+<li><p>in the next line we define the type of graph, in this case a simple bar plot (for examples of ggplot visualizations <a href="http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html">this is a nice guide</a>).</p></li>
+</ul>
+<p>All the other lines are just options on the colour and labels (optional); but allows a high degree of customization.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
+
+plot_wa_t &lt;-<span class="st"> </span><span class="kw">ggplot</span>(data[<span class="kw">which</span>(<span class="op">!</span><span class="kw">is.na</span>(data<span class="op">$</span>wa_pt) <span class="op">&amp;</span><span class="st"> </span><span class="op">!</span><span class="kw">is.na</span>(data<span class="op">$</span>HCTrebels)),], <span class="kw">aes</span>(wa_pt, <span class="dt">fill =</span> <span class="kw">factor</span>(HCTrebels))) <span class="op">+</span>
+<span class="st">        </span><span class="kw">geom_bar</span>(<span class="dt">position=</span><span class="st">&quot;fill&quot;</span>)<span class="op">+</span>
+<span class="st">        </span><span class="kw">xlab</span>(<span class="st">&quot;Aims of rebel group&quot;</span>) <span class="op">+</span>
+<span class="st">        </span><span class="kw">ylab</span>(<span class="st">&quot;Percent&quot;</span>) <span class="op">+</span>
+<span class="st">        </span><span class="kw">theme_classic</span>() <span class="op">+</span>
+<span class="st">        </span><span class="kw">scale_fill_discrete</span>(<span class="dt">name =</span> <span class="st">&quot;Type of group&quot;</span>, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Non terrorist&quot;</span>, <span class="st">&quot;Terrorist&quot;</span>)) <span class="op">+</span>
+<span class="st">        </span><span class="kw">ggtitle</span>(<span class="st">&quot;Figure 2: War aims and percent terrorist&quot;</span>)
+
+
+ plot_wa_t       </code></pre></div>
+<p><img src="Material_files/figure-html/unnamed-chunk-56-1.png" width="672" /> Then we are going to save our plot in the output folder. In this case is the images folder that we set up last time. We are going to save it in two formats fixing the with and hight. This is optional but is an example so you can see the flexibility of the procedure (image for a poster or for a paper without loosing the quality of the image for example).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setwd</span>(<span class="st">&quot;~/Documents/Jaime/github/Files_doctorado/Microeconometrics/Material/&quot;</span>)
+output &lt;-<span class="st"> &quot;images/&quot;</span>
+<span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(output,<span class="st">&quot;waraims_terrorist.pdf&quot;</span>), <span class="dt">plot =</span> plot_wa_t, <span class="dt">width =</span> <span class="dv">20</span>, <span class="dt">height =</span> <span class="dv">20</span>, <span class="dt">units =</span> <span class="st">&quot;cm&quot;</span>)
+<span class="kw">ggsave</span>(<span class="dt">filename =</span> <span class="kw">paste0</span>(output,<span class="st">&quot;waraims_terrorist.png&quot;</span>), <span class="dt">plot =</span> plot_wa_t, <span class="dt">width =</span> <span class="dv">20</span>, <span class="dt">height =</span> <span class="dv">20</span>, <span class="dt">units =</span> <span class="st">&quot;cm&quot;</span>)</code></pre></div>
+<p><strong>Proposed exercise:</strong> Using <code>ggplot2</code> reproduce Table 3 and 4 of the paper of Fortna 2015.</p>
+<p>Now we are going to reproduce the logit model presented in Table 1 in the paper.</p>
+<blockquote>
+<p>This analysis of terrorism as the dependent variable, rather than the independent variable as it is in the rest of the article, suggests that terrorism is most likely in civil wars in democracies, where rebels face governments representing a different religion, and is seldom seen in Africa (indeed in the data used in this study, there are no cases of high-casualty terrorism by African rebel groups).</p>
+</blockquote>
+<p>Before running the regression I point out that the variable <code>o_rebstrength</code> is a factor variable (categorical) and in the paper is treated as a continuous variable. What are the levels that this variable uses? Are the same for all statisticals softwares? (R vs. STATA for example)</p>
+<p>Indeed there are some differences. In STATA when we treat a categorical variable as continuous the assigned value of each category is from <span class="math inline">\(\in (0,N-1)\)</span>, while in R is form <span class="math inline">\(\in (1,N)\)</span>, where <span class="math inline">\(N\)</span> is the number of categories in the variable. For example take in consideration the variable in discussion we woudl have:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(data<span class="op">$</span>o_rebstrength)</code></pre></div>
+<pre><code>## 
+## much weaker      parity    stronger      weaker 
+##         418          53           7         537</code></pre>
+<p>That in the case we want to treat is as continues becomes:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(<span class="kw">as.numeric</span>(<span class="kw">factor</span>(data<span class="op">$</span>o_rebstrength)))</code></pre></div>
+<pre><code>## 
+##   1   2   3   4 
+## 418  53   7 537</code></pre>
+<p>This conversion has an implication in the estimates. In order to illustrate the differences, we are going to model each of the cases:</p>
+<ul>
+<li><p>The paper choice, with categories in the interval <span class="math inline">\((0,3)\)</span></p></li>
+<li><p>The R automatic clasification to numeric conversion <span class="math inline">\((1,4)\)</span></p></li>
+<li><p>Using the variable as a categorical variable (factor)</p></li>
+</ul>
+<p>The first thing we have to do is to charge the libraries that we are going to use:</p>
+<ol style="list-style-type: decimal">
+<li><p><code>dplyr</code> to transform our data.</p></li>
+<li><p><code>stargazer</code> to present our data</p></li>
+<li><p><code>sandwich</code> to estimate correctly the errors of the model</p></li>
+</ol>
+<p>Next we are going to construct the different variables that we are going to use in the regression and trim the data to get run the regression using the same sample as in the paper.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data<span class="op">$</span>o_rebstrength_paper &lt;-<span class="st"> </span><span class="kw">recode</span>(data<span class="op">$</span>o_rebstrength, <span class="st">&quot;weaker&quot;</span> =<span class="st"> </span>1L, <span class="st">&quot;much weaker&quot;</span> =<span class="st"> </span>0L , <span class="st">&quot;parity&quot;</span> =<span class="st"> </span>2L, <span class="st">&quot;stronger&quot;</span> =<span class="st"> </span>3L)
+data<span class="op">$</span>o_rebstrength_autom &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">factor</span>(data<span class="op">$</span>o_rebstrength))
+
+data_logit &lt;-<span class="st"> </span>data[<span class="kw">which</span>(data<span class="op">$</span>firstob <span class="op">==</span><span class="st"> </span><span class="dv">1</span>),]
+data_logit &lt;-<span class="st"> </span>data_logit[<span class="kw">which</span>(data_logit<span class="op">$</span>africa <span class="op">==</span><span class="st"> </span><span class="dv">0</span>),]</code></pre></div>
+<p>Then we proceed to do the regression:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">logit_formula1 &lt;-<span class="st"> </span><span class="kw">as.formula</span>(HCTrebels <span class="op">~</span><span class="st"> </span>o_rebstrength_paper <span class="op">+</span>
+<span class="st">                                    </span>demdum <span class="op">+</span>
+<span class="st">                                    </span>independenceC <span class="op">+</span>
+<span class="st">                                    </span>transformC <span class="op">+</span>
+<span class="st">                                    </span>diffreligion <span class="op">+</span>
+<span class="st">                                    </span>lnpop <span class="op">+</span>
+<span class="st">                                    </span>lngdppc <span class="op">+</span>
+<span class="st">                                    </span>africa <span class="op">+</span>
+<span class="st">                                    </span>lnmtnest <span class="op">+</span>
+<span class="st">                                    </span>act2)
+
+fit_logit &lt;-<span class="st"> </span><span class="kw">glm</span>(logit_formula1, <span class="dt">data =</span> data_logit, <span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>)
+
+<span class="kw">summary</span>(fit_logit)</code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = logit_formula1, family = &quot;binomial&quot;, data = data_logit)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.0000  -0.6668  -0.3528   0.6715   2.1582  
+## 
+## Coefficients: (1 not defined because of singularities)
+##                     Estimate Std. Error z value Pr(&gt;|z|)  
+## (Intercept)         -7.22727    6.11560  -1.182    0.237  
+## o_rebstrength_paper -0.84333    0.73379  -1.149    0.250  
+## demdum               1.55454    0.77923   1.995    0.046 *
+## independenceC       -0.23851    1.42041  -0.168    0.867  
+## transformC           1.36614    1.36307   1.002    0.316  
+## diffreligion         1.22558    0.83982   1.459    0.144  
+## lnpop                0.21832    0.25434   0.858    0.391  
+## lngdppc              0.43696    0.51841   0.843    0.399  
+## africa                    NA         NA      NA       NA  
+## lnmtnest            -0.05701    0.36706  -0.155    0.877  
+## act2                 0.10225    0.71189   0.144    0.886  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 90.008  on 69  degrees of freedom
+## Residual deviance: 62.024  on 60  degrees of freedom
+## AIC: 82.024
+## 
+## Number of Fisher Scoring iterations: 5</code></pre>
+<p>We can see that the <span class="math inline">\(\beta\)</span> are the same but the standa error and the <em>p-values</em> differ from the reported from the paper. The reason for this is that the error in the paper are clustered at the country level. How do we cluster the errors in R? Using the Clustered Variance Covariance matrix form the <code>sandwich</code> package we can retrieve the correct errors. We store the errors in a list, so we can put them directly in the <em>stargazer</em> function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">se &lt;-<span class="st"> </span><span class="kw">c</span>()
+se[[<span class="dv">1</span>]] &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(<span class="kw">vcovCL</span>(fit_logit,<span class="dt">cluster =</span> <span class="op">~</span><span class="st"> </span>js_countryid)))
+
+<span class="kw">stargazer</span>(fit_logit,<span class="dt">se =</span> se,<span class="dt">type =</span> <span class="st">&quot;text&quot;</span>)</code></pre></div>
+<pre><code>## 
+## ===============================================
+##                         Dependent variable:    
+##                     ---------------------------
+##                              HCTrebels         
+## -----------------------------------------------
+## o_rebstrength_paper           -0.843           
+##                               (0.756)          
+##                                                
+## demdum                        1.555**          
+##                               (0.720)          
+##                                                
+## independenceC                 -0.239           
+##                               (1.556)          
+##                                                
+## transformC                     1.366           
+##                               (1.650)          
+##                                                
+## diffreligion                  1.226**          
+##                               (0.508)          
+##                                                
+## lnpop                          0.218           
+##                               (0.250)          
+##                                                
+## lngdppc                        0.437           
+##                               (0.328)          
+##                                                
+## africa                                         
+##                                                
+##                                                
+## lnmtnest                      -0.057           
+##                               (0.311)          
+##                                                
+## act2                           0.102           
+##                               (0.731)          
+##                                                
+## Constant                      -7.227           
+##                               (5.186)          
+##                                                
+## -----------------------------------------------
+## Observations                    70             
+## Log Likelihood                -31.012          
+## Akaike Inf. Crit.             82.024           
+## ===============================================
+## Note:               *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
+<p>Then we proceed to perform the same operations for the other two cases so we can compare the results on the estimation.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">logit_formula2 &lt;-<span class="st"> </span><span class="kw">as.formula</span>(HCTrebels <span class="op">~</span><span class="st"> </span>o_rebstrength_autom <span class="op">+</span>
+<span class="st">                                    </span>demdum <span class="op">+</span>
+<span class="st">                                    </span>independenceC <span class="op">+</span>
+<span class="st">                                    </span>transformC <span class="op">+</span>
+<span class="st">                                    </span>diffreligion <span class="op">+</span>
+<span class="st">                                    </span>lnpop <span class="op">+</span>
+<span class="st">                                    </span>lngdppc <span class="op">+</span>
+<span class="st">                                    </span>africa <span class="op">+</span>
+<span class="st">                                    </span>lnmtnest <span class="op">+</span>
+<span class="st">                                    </span>act2)
+
+fit_logit2 &lt;-<span class="st"> </span><span class="kw">glm</span>(logit_formula2, <span class="dt">data =</span> data_logit, <span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>)
+
+se[[<span class="dv">2</span>]] &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(<span class="kw">vcovCL</span>(fit_logit2,<span class="dt">cluster =</span> <span class="op">~</span><span class="st"> </span>js_countryid)))
+
+
+
+logit_formula3 &lt;-<span class="st"> </span><span class="kw">as.formula</span>(HCTrebels <span class="op">~</span><span class="st"> </span>o_rebstrength <span class="op">+</span>
+<span class="st">                                    </span>demdum <span class="op">+</span>
+<span class="st">                                    </span>independenceC <span class="op">+</span>
+<span class="st">                                    </span>transformC <span class="op">+</span>
+<span class="st">                                    </span>diffreligion <span class="op">+</span>
+<span class="st">                                    </span>lnpop <span class="op">+</span>
+<span class="st">                                    </span>lngdppc <span class="op">+</span>
+<span class="st">                                    </span>africa <span class="op">+</span>
+<span class="st">                                    </span>lnmtnest <span class="op">+</span>
+<span class="st">                                    </span>act2)
+
+fit_logit3 &lt;-<span class="st"> </span><span class="kw">glm</span>(logit_formula3, <span class="dt">data =</span> data_logit, <span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>)
+
+se[[<span class="dv">3</span>]] &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(<span class="kw">vcovCL</span>(fit_logit3,<span class="dt">cluster =</span> <span class="op">~</span><span class="st"> </span>js_countryid)))
+
+<span class="kw">stargazer</span>(fit_logit,fit_logit2,fit_logit3, <span class="dt">type =</span> <span class="st">&quot;text&quot;</span>, <span class="dt">se =</span> se, <span class="dt">out =</span> <span class="kw">paste0</span>(output,<span class="st">&quot;Table1.tex&quot;</span>))</code></pre></div>
+<pre><code>## 
+## =================================================
+##                          Dependent variable:     
+##                     -----------------------------
+##                               HCTrebels          
+##                        (1)      (2)       (3)    
+## -------------------------------------------------
+## o_rebstrength_paper  -0.843                      
+##                      (0.756)                     
+##                                                  
+## o_rebstrength_autom            -0.188            
+##                               (0.265)            
+##                                                  
+## o_rebstrengthparity                    -15.877***
+##                                         (1.209)  
+##                                                  
+## o_rebstrengthweaker                      -0.719  
+##                                         (0.826)  
+##                                                  
+## demdum               1.555**  1.663**   1.617**  
+##                      (0.720)  (0.728)   (0.736)  
+##                                                  
+## independenceC        -0.239    -0.386    -0.212  
+##                      (1.556)  (1.522)   (1.614)  
+##                                                  
+## transformC            1.366    1.387     1.358   
+##                      (1.650)  (1.595)   (1.674)  
+##                                                  
+## diffreligion         1.226**  1.288**   1.195**  
+##                      (0.508)  (0.518)   (0.527)  
+##                                                  
+## lnpop                 0.218    0.288     0.206   
+##                      (0.250)  (0.219)   (0.248)  
+##                                                  
+## lngdppc               0.437    0.523*    0.432   
+##                      (0.328)  (0.300)   (0.332)  
+##                                                  
+## africa                                           
+##                                                  
+##                                                  
+## lnmtnest             -0.057    -0.078    -0.059  
+##                      (0.311)  (0.290)   (0.319)  
+##                                                  
+## act2                  0.102    0.130     0.116   
+##                      (0.731)  (0.735)   (0.730)  
+##                                                  
+## Constant             -7.227   -8.579*    -7.116  
+##                      (5.186)  (4.613)   (5.168)  
+##                                                  
+## -------------------------------------------------
+## Observations           70        70        70    
+## Log Likelihood       -31.012  -31.406   -30.807  
+## Akaike Inf. Crit.    82.024    82.812    83.614  
+## =================================================
+## Note:                 *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
+<p>The result are robust to treatin the variable as a continuous variable. Also the parameters that were significant remain significant in and the value is similar for the tested specifications. Now that we concluded this part let`s proceed with the replication of the <a href="https://en.wikipedia.org/wiki/Proportional_hazards_model#The_Cox_model">Cox Proportional Hazard model</a>, reported in table 2 of the paper.</p>
+<p>What is Hazard function? Is the probability that the unit of analysis experiences the event of interest (in many cases (medical) the event of interest is death) within a time interval, given that it has survived up to the bigening of such interval. The intuition of the interpretation is risk of having the event of interest at time <span class="math inline">\(t\)</span> (risk of dying at <span class="math inline">\(t\)</span>). Look that this implied in the formulas of the hazard, since in the numerator we have the number of units that experience the event of interest at time t, while in the denominator we have the surviving individuals (times the length of the interval).</p>
+<p><span class="math display">\[\lambda(t|X)=\lambda_0(t) e^{X` \beta}\]</span> The likelihood of the event is then:</p>
+<p><span class="math display">\[L_i(\beta)=\frac{\lambda(Y_i|X_i)}{\sum_{Y_j &gt;Y_i} \lambda(Y_i|X_j)}=\frac{e^{X_i` \beta}}{\sum_{Y_j &gt;Y_i} e^{X_j` \beta}}\]</span></p>
+<p>This is a continuous function with first and second derivative defined, so the score and the hessian is fully identified. The Newton-Raphson method can be used to optimize such function and find the parameters of interest.</p>
+<p>In order to estimate the Cox we are going to use the <code>survival</code> package. We load the library and then we use the same sample that is used in the paper. We also define the variables of the start date and end date.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">datacox &lt;-<span class="st"> </span>data[<span class="kw">which</span>(data<span class="op">$</span>keepobs<span class="op">==</span><span class="dv">1</span>),]
+datacox<span class="op">$</span>end_date &lt;-<span class="st"> </span>datacox<span class="op">$</span><span class="st">`</span><span class="dt">_t</span><span class="st">`</span>
+datacox<span class="op">$</span>start_date &lt;-<span class="st"> </span>datacox<span class="op">$</span><span class="st">`</span><span class="dt">_t0</span><span class="st">`</span></code></pre></div>
+<p>To perform the Cox regression we are going to use the command <code>coxph()</code>. This function need as input the following elements:</p>
+<ul>
+<li><p>Formula, that has dependant variable has a Survival Object.</p></li>
+<li><p>Data: a data frame containing the data to analyze.</p></li>
+</ul>
+<p>In the paper they use the robust standard error so we use the option. Moreover since we know that the paper used stata, the “breslow” option for the ties is set up. We choose this to assure we get the same results as in the paper. Following the input we define the formula. From the help on the function we also know that:</p>
+<blockquote>
+<p>There are three special terms that may be used in the model equation. A strata term identifies a stratified Cox model; separate baseline hazard functions are fit for each strata. The cluster term is used to compute a robust variance for the model. The term + <strong>cluster(id) where each value of id is unique is equivalent to specifying the robust=TRUE argument. If the id variable is not unique, it is assumed that it identifies clusters of correlated observations</strong>. The robust estimate arises from many different arguments and thus has had many labels. It is variously known as the Huber sandwich estimator, <strong>White’s estimate (linear models/econometrics)</strong></p>
+</blockquote>
+<p>So we can include the robust clustered by country standard errors in the formula for this function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">formulaCox &lt;-<span class="st"> </span><span class="kw">as.formula</span>(<span class="kw">Surv</span>(start_date, end_date, warends) <span class="op">~</span><span class="st"> </span>
+<span class="st">                                 </span>HCTrebels <span class="op">+</span>
+<span class="st">                                 </span>o_rebstrength_paper <span class="op">+</span>
+<span class="st">                                 </span>demdum <span class="op">+</span>
+<span class="st">                                 </span>independenceC <span class="op">+</span>
+<span class="st">                                 </span>transformC <span class="op">+</span>
+<span class="st">                                 </span>lnpop <span class="op">+</span>
+<span class="st">                                 </span>lngdppc <span class="op">+</span>
+<span class="st">                                 </span>africa <span class="op">+</span>
+<span class="st">                                 </span>diffreligion <span class="op">+</span>
+<span class="st">                                 </span>warage <span class="op">+</span><span class="st"> </span>
+<span class="st">                                 </span><span class="kw">cluster</span>(js_countryid))</code></pre></div>
+<p>We then proceed to the estimation.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_cox &lt;-<span class="st"> </span><span class="kw">coxph</span>(formulaCox, <span class="dt">data =</span> datacox, <span class="dt">robust =</span> <span class="ot">TRUE</span>, <span class="dt">method=</span><span class="st">&quot;breslow&quot;</span>)
+fit_cox</code></pre></div>
+<pre><code>## Call:
+## coxph(formula = formulaCox, data = datacox, robust = TRUE, method = &quot;breslow&quot;)
+## 
+##                        coef exp(coef) se(coef) robust se     z      p
+## HCTrebels           -0.8941    0.4090   0.3694    0.3146 -2.84 0.0045
+## o_rebstrength_paper  0.1463    1.1576   0.2214    0.1939  0.75 0.4505
+## demdum              -0.5288    0.5893   0.4123    0.3952 -1.34 0.1809
+## independenceC       -0.6257    0.5349   0.3328    0.3484 -1.80 0.0725
+## transformC          -0.6392    0.5277   0.3384    0.2831 -2.26 0.0240
+## lnpop               -0.0646    0.9374   0.1185    0.0952 -0.68 0.4974
+## lngdppc             -0.0879    0.9158   0.2060    0.1867 -0.47 0.6377
+## africa              -0.5608    0.5708   0.3024    0.2898 -1.94 0.0530
+## diffreligion         0.4305    1.5380   0.3345    0.2878  1.50 0.1347
+## warage              -0.0375    0.9632   0.0405    0.0298 -1.26 0.2090
+## 
+## Likelihood ratio test=30.1  on 10 df, p=8e-04
+## n= 566, number of events= 86 
+##    (68 observations deleted due to missingness)</code></pre>
+<p>As we can see the exponented coefficient coincide with the values reported in the paper. Nevertheless the standard errors don’t. This is due to two things:</p>
+<ol style="list-style-type: decimal">
+<li>In stata the errors are adjusted by the ratio of the number of groups in the clustered errors.</li>
+</ol>
+<p><span class="math display">\[SE * \frac{g}{g-1}\]</span> 2. The reported values are scaled, using the delta method.</p>
+<p>In order to adjust for this two things the new errors are computed:</p>
+<p><span class="math display">\[\hat{SE}=\left(\beta^2 \times diag(\Sigma) \times \frac{g}{g-1} \right)^{\frac{1}{2}}\]</span> We proceed to perform the calculations:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">adjustment &lt;-<span class="st"> </span><span class="kw">nlevels</span>(<span class="kw">factor</span>(datacox<span class="op">$</span>js_countryid))
+se_cox &lt;-<span class="st"> </span><span class="kw">c</span>()
+se_cox[[<span class="dv">1</span>]] &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">exp</span>(<span class="kw">coef</span>(fit_cox))<span class="op">^</span><span class="dv">2</span><span class="op">*</span><span class="kw">diag</span>(<span class="kw">vcov</span>(fit_cox)) <span class="op">*</span><span class="st"> </span>(adjustment<span class="op">/</span>(adjustment<span class="op">-</span><span class="dv">1</span>)))
+fit_cox<span class="op">$</span>coefficients &lt;-<span class="st"> </span><span class="kw">exp</span>(fit_cox<span class="op">$</span>coefficients)
+
+tval &lt;-<span class="st"> </span><span class="kw">c</span>()
+tval[[<span class="dv">1</span>]] &lt;-<span class="st"> </span><span class="kw">as.vector</span>(fit_cox<span class="op">$</span>coefficients)<span class="op">/</span>se_cox[[<span class="dv">1</span>]]
+pvalues &lt;-<span class="st"> </span><span class="kw">c</span>()
+pvalues[[<span class="dv">1</span>]] &lt;-<span class="st"> </span><span class="kw">pt</span>(<span class="kw">abs</span>(tval[[<span class="dv">1</span>]]), <span class="dt">df =</span> <span class="dv">10</span>, <span class="dt">lower.tail =</span> <span class="ot">FALSE</span>)<span class="op">*</span><span class="dv">2</span>
+
+<span class="kw">stargazer</span>(fit_cox, <span class="dt">se =</span> se_cox,<span class="dt">type =</span> <span class="st">&quot;text&quot;</span>, <span class="dt">p =</span> pvalues)</code></pre></div>
+<pre><code>## 
+## ================================================
+##                          Dependent variable:    
+##                      ---------------------------
+##                              start_date         
+## ------------------------------------------------
+## HCTrebels                      0.409**          
+##                                (0.130)          
+##                                                 
+## o_rebstrength_paper           1.158***          
+##                                (0.227)          
+##                                                 
+## demdum                         0.589**          
+##                                (0.235)          
+##                                                 
+## independenceC                  0.535**          
+##                                (0.188)          
+##                                                 
+## transformC                    0.528***          
+##                                (0.151)          
+##                                                 
+## lnpop                         0.937***          
+##                                (0.090)          
+##                                                 
+## lngdppc                       0.916***          
+##                                (0.173)          
+##                                                 
+## africa                        0.571***          
+##                                (0.167)          
+##                                                 
+## diffreligion                  1.538***          
+##                                (0.447)          
+##                                                 
+## warage                        0.963***          
+##                                (0.029)          
+##                                                 
+## ------------------------------------------------
+## Observations                     566            
+## R2                              0.052           
+## Max. Possible R2                0.624           
+## Log Likelihood                -261.948          
+## Wald Test                57.460*** (df = 10)    
+## LR Test                  30.095*** (df = 10)    
+## Score (Logrank) Test     29.239*** (df = 10)    
+## ================================================
+## Note:                *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
+<blockquote>
+<p>“In duration models such as this one, hazard ratios are interpreted relative to 1. Hazard ratios less than 1 indicate variables associated with longer wars; those with hazard ratios greater than 1 with shorter wars. The hazard ratio of 0.41 for terrorism indicates an estimated 59 percent reduction in the hazard of war termination, all else equal—an effect that is highly statistically significant.”</p>
+</blockquote>
+<p>Now we do the same for the other two especifications that we are testing:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">formulaCox2 &lt;-<span class="st"> </span><span class="kw">as.formula</span>(<span class="kw">Surv</span>(start_date, end_date, warends) <span class="op">~</span><span class="st"> </span>
+<span class="st">                                 </span>HCTrebels <span class="op">+</span>
+<span class="st">                                 </span>o_rebstrength_autom <span class="op">+</span>
+<span class="st">                                 </span>demdum <span class="op">+</span>
+<span class="st">                                 </span>independenceC <span class="op">+</span>
+<span class="st">                                 </span>transformC <span class="op">+</span>
+<span class="st">                                 </span>lnpop <span class="op">+</span>
+<span class="st">                                 </span>lngdppc <span class="op">+</span>
+<span class="st">                                 </span>africa <span class="op">+</span>
+<span class="st">                                 </span>diffreligion <span class="op">+</span>
+<span class="st">                                 </span>warage <span class="op">+</span><span class="st"> </span>
+<span class="st">                                 </span><span class="kw">cluster</span>(js_countryid))
+
+fit_cox2 &lt;-<span class="st"> </span><span class="kw">coxph</span>(formulaCox2, <span class="dt">data =</span> datacox, <span class="dt">robust =</span> <span class="ot">TRUE</span>, <span class="dt">method=</span><span class="st">&quot;breslow&quot;</span>)
+adjustment &lt;-<span class="st"> </span><span class="kw">nlevels</span>(<span class="kw">factor</span>(datacox<span class="op">$</span>js_countryid))
+se_cox[[<span class="dv">2</span>]] &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">exp</span>(<span class="kw">coef</span>(fit_cox2))<span class="op">^</span><span class="dv">2</span><span class="op">*</span><span class="kw">diag</span>(<span class="kw">vcov</span>(fit_cox2)) <span class="op">*</span><span class="st"> </span>(adjustment<span class="op">/</span>(adjustment<span class="op">-</span><span class="dv">1</span>)))
+fit_cox2<span class="op">$</span>coefficients &lt;-<span class="st"> </span><span class="kw">exp</span>(fit_cox2<span class="op">$</span>coefficients)
+
+
+tval[[<span class="dv">2</span>]] &lt;-<span class="st"> </span><span class="kw">as.vector</span>(fit_cox<span class="op">$</span>coefficients)<span class="op">/</span>se_cox[[<span class="dv">2</span>]]
+pvalues[[<span class="dv">2</span>]] &lt;-<span class="st"> </span><span class="kw">pt</span>(<span class="kw">abs</span>(tval[[<span class="dv">2</span>]]), <span class="dt">df =</span> <span class="dv">10</span>, <span class="dt">lower.tail =</span> <span class="ot">FALSE</span>)<span class="op">*</span><span class="dv">2</span>
+
+formulaCox3 &lt;-<span class="st"> </span><span class="kw">as.formula</span>(<span class="kw">Surv</span>(start_date, end_date, warends) <span class="op">~</span><span class="st"> </span>
+<span class="st">                                 </span>HCTrebels <span class="op">+</span>
+<span class="st">                                 </span>o_rebstrength <span class="op">+</span>
+<span class="st">                                 </span>demdum <span class="op">+</span>
+<span class="st">                                 </span>independenceC <span class="op">+</span>
+<span class="st">                                 </span>transformC <span class="op">+</span>
+<span class="st">                                 </span>lnpop <span class="op">+</span>
+<span class="st">                                 </span>lngdppc <span class="op">+</span>
+<span class="st">                                 </span>africa <span class="op">+</span>
+<span class="st">                                 </span>diffreligion <span class="op">+</span>
+<span class="st">                                 </span>warage <span class="op">+</span><span class="st"> </span>
+<span class="st">                                 </span><span class="kw">cluster</span>(js_countryid))
+
+fit_cox3 &lt;-<span class="st"> </span><span class="kw">coxph</span>(formulaCox3, <span class="dt">data =</span> datacox, <span class="dt">robust =</span> <span class="ot">TRUE</span>, <span class="dt">method=</span><span class="st">&quot;breslow&quot;</span>)
+adjustment &lt;-<span class="st"> </span><span class="kw">nlevels</span>(<span class="kw">factor</span>(datacox<span class="op">$</span>js_countryid))
+se_cox[[<span class="dv">3</span>]] &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">exp</span>(<span class="kw">coef</span>(fit_cox3))<span class="op">^</span><span class="dv">2</span><span class="op">*</span><span class="kw">diag</span>(<span class="kw">vcov</span>(fit_cox3)) <span class="op">*</span><span class="st"> </span>(adjustment<span class="op">/</span>(adjustment<span class="op">-</span><span class="dv">1</span>)))
+fit_cox3<span class="op">$</span>coefficients &lt;-<span class="st"> </span><span class="kw">exp</span>(fit_cox3<span class="op">$</span>coefficients)
+
+
+tval[[<span class="dv">3</span>]] &lt;-<span class="st"> </span><span class="kw">as.vector</span>(fit_cox<span class="op">$</span>coefficients)<span class="op">/</span>se_cox[[<span class="dv">3</span>]]</code></pre></div>
+<pre><code>## Warning in as.vector(fit_cox$coefficients)/se_cox[[3]]: longer object
+## length is not a multiple of shorter object length</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pvalues[[<span class="dv">3</span>]] &lt;-<span class="st"> </span><span class="kw">pt</span>(<span class="kw">abs</span>(tval[[<span class="dv">3</span>]]), <span class="dt">df =</span> <span class="dv">12</span>, <span class="dt">lower.tail =</span> <span class="ot">FALSE</span>)<span class="op">*</span><span class="dv">2</span>
+
+
+<span class="kw">stargazer</span>(fit_cox, fit_cox2, fit_cox3, <span class="dt">se =</span> se_cox,<span class="dt">type =</span> <span class="st">&quot;text&quot;</span>, <span class="dt">p =</span> pvalues)</code></pre></div>
+<pre><code>## 
+## =================================================================================
+##                                           Dependent variable:                    
+##                       -----------------------------------------------------------
+##                                               start_date                         
+##                               (1)                 (2)                 (3)        
+## ---------------------------------------------------------------------------------
+## HCTrebels                   0.409**            0.409***            0.405***      
+##                             (0.130)             (0.127)             (0.126)      
+##                                                                                  
+## o_rebstrength_paper        1.158***                                              
+##                             (0.227)                                              
+##                                                                                  
+## o_rebstrength_autom                            0.904***                          
+##                                                 (0.068)                          
+##                                                                                  
+## o_rebstrengthparity                                                 1.301*       
+##                                                                     (0.543)      
+##                                                                                  
+## o_rebstrengthstronger                                                2.592       
+##                                                                     (1.271)      
+##                                                                                  
+## o_rebstrengthweaker                                                 0.818**      
+##                                                                     (0.208)      
+##                                                                                  
+## demdum                      0.589**             0.608**             0.558**      
+##                             (0.235)             (0.243)             (0.239)      
+##                                                                                  
+## independenceC               0.535**             0.537**            0.536***      
+##                             (0.188)             (0.194)             (0.195)      
+##                                                                                  
+## transformC                 0.528***            0.525***            0.516***      
+##                             (0.151)             (0.156)             (0.157)      
+##                                                                                  
+## lnpop                      0.937***            0.868***            0.912***      
+##                             (0.090)             (0.089)             (0.097)      
+##                                                                                  
+## lngdppc                    0.916***            0.862***            0.890***      
+##                             (0.173)             (0.183)             (0.184)      
+##                                                                                  
+## africa                     0.571***            0.532***            0.511***      
+##                             (0.167)             (0.167)             (0.160)      
+##                                                                                  
+## diffreligion               1.538***            1.468***              1.562       
+##                             (0.447)             (0.424)             (0.465)      
+##                                                                                  
+## warage                     0.963***            0.956***            0.958***      
+##                             (0.029)             (0.030)             (0.030)      
+##                                                                                  
+## ---------------------------------------------------------------------------------
+## Observations                  566                 566                 566        
+## R2                           0.052               0.053               0.056       
+## Max. Possible R2             0.624               0.624               0.624       
+## Log Likelihood             -261.948            -261.560            -260.641      
+## Wald Test             57.460*** (df = 10) 65.820*** (df = 10) 86.590*** (df = 12)
+## LR Test               30.095*** (df = 10) 30.870*** (df = 10) 32.709*** (df = 12)
+## Score (Logrank) Test  29.239*** (df = 10) 29.819*** (df = 10) 31.963*** (df = 12)
+## =================================================================================
+## Note:                                                 *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
+<p>Now that we have completed the estimation, we want to asess the effect of being a terrorrist group on the duration of war. So plotting the survival rates is a good way to visualize because it allows us to identify the isolated effect of the variable. To do so we create a fictitious dataframe with two rows, one for each of the groups (terrorist, non terrorist), and in which the other columns are all the same for the two rows. We can determine which channels are on, so we can control the survival cases.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_cox &lt;-<span class="st"> </span><span class="kw">coxph</span>(formulaCox, <span class="dt">data =</span> datacox, <span class="dt">robust =</span> <span class="ot">TRUE</span>, <span class="dt">method=</span><span class="st">&quot;breslow&quot;</span>)
+
+
+HCTrebels_df0 &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">cbind</span>(<span class="dt">HCTrebels =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), 
+                       <span class="dt">o_rebstrength_paper =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">1</span>), 
+                       <span class="dt">demdum=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>), 
+                       <span class="dt">independenceC=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">1</span>), 
+                       <span class="dt">transformC=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>), 
+                       <span class="dt">africa =</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>), 
+                       <span class="dt">diffreligion =</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>), 
+                       <span class="dt">warage =</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>),
+                       <span class="dt">lnpop =</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>),
+                       <span class="dt">lngdppc =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)
+                       ))
+
+fit &lt;-<span class="st"> </span><span class="kw">survfit</span>(fit_cox, <span class="dt">newdata =</span> HCTrebels_df0, <span class="dt">data =</span> datacox)
+
+<span class="kw">ggsurvplot</span>(fit, <span class="dt">conf.int =</span> <span class="ot">TRUE</span>, <span class="dt">legend.labs=</span><span class="kw">c</span>(<span class="st">&quot;Terrorist=0&quot;</span>, <span class="st">&quot;Terrorist=1&quot;</span>),
+           <span class="dt">ggtheme =</span> <span class="kw">theme_minimal</span>())</code></pre></div>
+<p><img src="Material_files/figure-html/unnamed-chunk-69-1.png" width="672" /></p>
+<p>Using only the interest regressor:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">formulaCox_simple &lt;-<span class="st"> </span><span class="kw">as.formula</span>(<span class="kw">Surv</span>(start_date, end_date, warends) <span class="op">~</span><span class="st"> </span>
+<span class="st">                                 </span><span class="kw">strata</span>(HCTrebels))
+
+fit_cox_simple &lt;-<span class="st"> </span><span class="kw">coxph</span>(formulaCox_simple, <span class="dt">data =</span> datacox, <span class="dt">robust =</span> <span class="ot">TRUE</span>, <span class="dt">method=</span><span class="st">&quot;breslow&quot;</span>)
+
+<span class="kw">ggsurvplot</span>(<span class="kw">survfit</span>(fit_cox_simple), <span class="dt">data =</span> datacox, <span class="dt">conf.int =</span> <span class="ot">TRUE</span>, <span class="dt">legend.labs=</span><span class="kw">c</span>(<span class="st">&quot;Terrorist=0&quot;</span>, <span class="st">&quot;Terrorist=1&quot;</span>),
+           <span class="dt">ggtheme =</span> <span class="kw">theme_minimal</span>())</code></pre></div>
+<p><img src="Material_files/figure-html/unnamed-chunk-70-1.png" width="672" /></p>
+<p>Controling for the covariates:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">HCTrebels_df2 &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">cbind</span>(<span class="dt">HCTrebels =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>), 
+                       <span class="dt">o_rebstrength_paper =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">1</span>), 
+                       <span class="dt">demdum=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>), 
+                       <span class="dt">independenceC=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>), 
+                       <span class="dt">transformC=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>), 
+                       <span class="dt">africa =</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>), 
+                       <span class="dt">diffreligion =</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>), 
+                       <span class="dt">warage =</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>),
+                       <span class="dt">lnpop =</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>),
+                       <span class="dt">lngdppc =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)
+                       ))
+
+fit &lt;-<span class="st"> </span><span class="kw">survfit</span>(fit_cox, <span class="dt">newdata =</span> HCTrebels_df2, <span class="dt">data =</span> datacox)
+<span class="kw">ggsurvplot</span>(fit, <span class="dt">conf.int =</span> <span class="ot">TRUE</span>, <span class="dt">legend.labs=</span><span class="kw">c</span>(<span class="st">&quot;Terrorist=0&quot;</span>, <span class="st">&quot;Terrorist=1&quot;</span>),
+           <span class="dt">ggtheme =</span> <span class="kw">theme_minimal</span>())</code></pre></div>
+<p><img src="Material_files/figure-html/unnamed-chunk-71-1.png" width="672" /></p>
+<p>Taking the mean of each column:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"> means_data &lt;-<span class="st"> </span>datacox <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(
+                                o_rebstrength_paper,
+                                demdum,
+                                independenceC,
+                                transformC,
+                                lnpop,
+                                lngdppc,
+                                africa,
+                                diffreligion,
+                                warage) <span class="op">%&gt;%</span>
+<span class="st">        </span><span class="kw">summarize_all</span>(.,mean, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+
+HCTrebels_df &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="dt">HCTrebels =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">1</span>),<span class="kw">rbind</span>(means_data,means_data))
+fit &lt;-<span class="st"> </span><span class="kw">survfit</span>(fit_cox, <span class="dt">newdata =</span> HCTrebels_df, <span class="dt">data =</span> datacox)
+<span class="kw">ggsurvplot</span>(fit, <span class="dt">conf.int =</span> <span class="ot">TRUE</span>, <span class="dt">legend.labs=</span><span class="kw">c</span>(<span class="st">&quot;Terrorist=0&quot;</span>, <span class="st">&quot;Terrorist=1&quot;</span>),
+           <span class="dt">ggtheme =</span> <span class="kw">theme_minimal</span>())</code></pre></div>
+<p><img src="Material_files/figure-html/unnamed-chunk-72-1.png" width="672" /></p>
+</div>
+<div id="example-ii-weibull-regression" class="section level2">
+<h2><span class="header-section-number">4.3</span> Example II: Weibull regression</h2>
+<p>In the second part of this tutorial we are going to perform a Weibull regression to estimate survival data. In order to understand what is the procedure behind, consider the distribution of a time event:</p>
+<p><span class="math display">\[\log(t) = X \beta + \sigma \epsilon\]</span></p>
+<p>Where is a vector of the coeficcients of interest, is the shape parameter, and folows a extreme minimum value distribution <span class="math inline">\(\epsilon \in (0,\sigma)\)</span>. This function a proportional hazard function given by:</p>
+<p><span class="math display">\[h(t,X,\beta,\lambda) = \lambda \gamma t^{\lambda -1}e^\lambda X \beta = h_0(t) e^{X \theta}\]</span> This speicfication as in the Cox model will allow to assess the treatment effect in term of the hazard rate with respect to a censoring analysis. This is choosed by the author by:</p>
+<blockquote>
+<p>Since the Weibull model exhibits the “proportional hazard rate” property, changes in regressors shift the baseline hazard, <span class="math inline">\(h_o(t)\)</span>, and the exponentiated coefficients capture the effect of a one-unit increase in a particular variable on the exit hazard. Specifically, if the exponentiated coefficient b is greater (smaller) than one, the difference <span class="math inline">\((b−1)*100\)</span> indicates the percentage by which a one-unit increase in the explanatory variable would increase (decrease) the hazard of exit. Because exponentiated coefficients are more easily interpreted, we show these in Tables 2 and 3. As is standard in survival analyses, we present standard errors and show statistical significance for the original coefficients.</p>
+</blockquote>
+<p>In order to understand how to use this procedure we are going to replicate the first two columns of table 2 of a <a href="https://scholarship.sha.cornell.edu/cgi/viewcontent.cgi?article=1296&amp;context=articles">paper that tries to assess the effect of distance of headquarters on the survival of establishments</a>. The paper first motivates and explains the mechanisms behind this formulation:</p>
+<ul>
+<li><p>Distance from the headquarters may be a function of the quality of the monitoring by the HQ on the employees. Thus the effort of the employees may be lower in distant stablishments (this is the economic reason you may want to licence a franchise).</p></li>
+<li><p>Knowledge of the characteristics of local market conditions.</p></li>
+<li><p>Local market power</p></li>
+<li><p>Optimal location of HQ and stablishments. (endogeneity of distance)</p></li>
+<li><p>Reputation effect. When experiencing a crisis and facing the desicion of a closure the manager of a firm must decide which stablishment to close. Closing the nearest affect the local comunity of the HQ which might be undesirable.</p></li>
+</ul>
+<p>Let’s first import the <a href="https://drive.google.com/open?id=1EmOEdDKCmkuMMwMzWbY762obKuwlnbEL">data</a> using the <code>data.table</code> package. We also trim the data so it correspond to the sample used by the author in the paper.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(data.table)
+
+data &lt;-<span class="st"> </span><span class="kw">fread</span>(<span class="st">&quot;YOUR PATH GOES HERE&quot;</span>)
+data &lt;-<span class="st"> </span>data[<span class="kw">which</span>(data<span class="op">$</span>touse <span class="op">==</span><span class="st"> </span><span class="dv">1</span>),]</code></pre></div>
+<p>If you are in a windows machine you need to set the system locale to english to make the dates operation work.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Sys.setlocale</span>(<span class="st">&quot;LC_TIME&quot;</span>, <span class="st">&quot;English_United States&quot;</span>)</code></pre></div>
+<pre><code>## Warning in Sys.setlocale(&quot;LC_TIME&quot;, &quot;English_United States&quot;): OS reports
+## request to set locale to &quot;English_United States&quot; cannot be honored</code></pre>
+<pre><code>## [1] &quot;&quot;</code></pre>
+<p>We are going to define the starting and end date, the censoring of the observations, and the duration of the event.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data<span class="op">$</span>ostart &lt;-<span class="st"> </span><span class="kw">as.Date</span>(data<span class="op">$</span>ostart, <span class="st">&quot;%d%b%Y&quot;</span>)
+data<span class="op">$</span>oend &lt;-<span class="st"> </span><span class="kw">as.Date</span>(data<span class="op">$</span>oend, <span class="st">&quot;%d%b%Y&quot;</span>)
+data[<span class="kw">is.na</span>(data<span class="op">$</span>oend),]<span class="op">$</span>oend &lt;-<span class="st"> </span><span class="kw">as.Date</span>(<span class="st">&quot;01jan2007&quot;</span>, <span class="st">&quot;%d%b%Y&quot;</span>)
+data<span class="op">$</span>rcensored &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(data<span class="op">$</span>oend <span class="op">!=</span><span class="st"> </span><span class="kw">as.Date</span>(<span class="st">&quot;01jan2007&quot;</span>, <span class="st">&quot;%d%b%Y&quot;</span>))
+data<span class="op">$</span>duration &lt;-<span class="st"> </span>data<span class="op">$</span>oend <span class="op">-</span><span class="st"> </span>data<span class="op">$</span>ostart</code></pre></div>
+<p>The basic specification is controlled by: dummy variables for HQ geocode quality and for establishment geocode quality, for organization type, and for year of founding.</p>
+<blockquote>
+<p>To control for vari- ous dimensions of heterogeneity that could affect exit rates, all regressions include dummy variables for the six forms of organization (proprietorships, limited and general partnerships, Texan limited liability, and Texan and non-Texan corporations), the year of founding, which control for macroeconomic conditions at the time of founding, and for the seven geocoding quality for the establishment and also for the owner HQ addresses.</p>
+</blockquote>
+<p>As usual we construct our formula to use in the function:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">formula1 &lt;-<span class="st"> </span><span class="kw">as.formula</span>(<span class="kw">Surv</span>(duration, rcensored) <span class="op">~</span><span class="st"> </span>
+<span class="st">                               </span><span class="kw">factor</span>(ototype) <span class="op">+</span>
+<span class="st">                               </span><span class="kw">factor</span>(yearstart) <span class="op">+</span>
+<span class="st">                               </span><span class="kw">factor</span>(own_geo_quality) <span class="op">+</span>
+<span class="st">                               </span><span class="kw">factor</span>(outl_geo_quality) <span class="op">+</span>
+<span class="st">                               </span>lgtdistgeo)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit1 &lt;-<span class="st"> </span><span class="kw">survreg</span>(formula1,
+                <span class="dt">data =</span> data, 
+                <span class="dt">dist =</span> <span class="st">&quot;weibull&quot;</span>, 
+                <span class="dt">control =</span> <span class="kw">list</span>(<span class="dt">maxiter =</span> <span class="dv">60</span>))
+
+<span class="kw">summary</span>(fit1)</code></pre></div>
+<pre><code>## 
+## Call:
+## survreg(formula = formula1, data = data, dist = &quot;weibull&quot;, control = list(maxiter = 60))
+##                                                    Value Std. Error
+## (Intercept)                                     7.709006   0.092057
+## factor(ototype)CL: Texas Limited Liability Co  -0.261218   0.013281
+## factor(ototype)CT: Texas Profit Corp           -0.207343   0.009931
+## factor(ototype)IS: Individual - Sole Owner     -0.847139   0.009751
+## factor(ototype)PG: General Partnership         -1.092472   0.010186
+## factor(ototype)PL: Limited Partnership - Texas  0.560364   0.014084
+## factor(yearstart)1991                          -0.116920   0.005202
+## factor(yearstart)1992                          -0.269548   0.004965
+## factor(yearstart)1993                          -0.303684   0.004995
+## factor(yearstart)1994                          -0.288483   0.005074
+## factor(yearstart)1995                          -0.318193   0.005116
+## factor(yearstart)1996                          -0.301163   0.005270
+## factor(yearstart)1997                          -0.272139   0.005394
+## factor(yearstart)1998                          -0.279865   0.005369
+## factor(yearstart)1999                          -0.192516   0.005412
+## factor(yearstart)2000                          -0.216911   0.005575
+## factor(yearstart)2001                          -0.218254   0.005665
+## factor(yearstart)2002                          -0.249323   0.005587
+## factor(yearstart)2003                          -0.215979   0.005789
+## factor(own_geo_quality)Street Exact             0.543391   0.063180
+## factor(own_geo_quality)Street Score 30 - 50     0.711444   0.063864
+## factor(own_geo_quality)Street Score 50 - 80     0.672519   0.063274
+## factor(own_geo_quality)Street Score 80 - 99     0.406690   0.063241
+## factor(own_geo_quality)Zip Centroid             0.645196   0.063191
+## factor(outl_geo_quality)Street Exact            0.173846   0.071878
+## factor(outl_geo_quality)Street Score 30 - 50   -0.020364   0.072150
+## factor(outl_geo_quality)Street Score 50 - 80   -0.021429   0.071926
+## factor(outl_geo_quality)Street Score 80 - 99   -0.296365   0.071903
+## factor(outl_geo_quality)Zip Centroid            0.013879   0.071922
+## lgtdistgeo                                     -0.100326   0.000661
+## Log(scale)                                      0.152978   0.000682
+##                                                      z       p
+## (Intercept)                                      83.74 &lt; 2e-16
+## factor(ototype)CL: Texas Limited Liability Co   -19.67 &lt; 2e-16
+## factor(ototype)CT: Texas Profit Corp            -20.88 &lt; 2e-16
+## factor(ototype)IS: Individual - Sole Owner      -86.87 &lt; 2e-16
+## factor(ototype)PG: General Partnership         -107.25 &lt; 2e-16
+## factor(ototype)PL: Limited Partnership - Texas   39.79 &lt; 2e-16
+## factor(yearstart)1991                           -22.47 &lt; 2e-16
+## factor(yearstart)1992                           -54.29 &lt; 2e-16
+## factor(yearstart)1993                           -60.80 &lt; 2e-16
+## factor(yearstart)1994                           -56.85 &lt; 2e-16
+## factor(yearstart)1995                           -62.19 &lt; 2e-16
+## factor(yearstart)1996                           -57.15 &lt; 2e-16
+## factor(yearstart)1997                           -50.46 &lt; 2e-16
+## factor(yearstart)1998                           -52.12 &lt; 2e-16
+## factor(yearstart)1999                           -35.57 &lt; 2e-16
+## factor(yearstart)2000                           -38.91 &lt; 2e-16
+## factor(yearstart)2001                           -38.52 &lt; 2e-16
+## factor(yearstart)2002                           -44.63 &lt; 2e-16
+## factor(yearstart)2003                           -37.31 &lt; 2e-16
+## factor(own_geo_quality)Street Exact               8.60 &lt; 2e-16
+## factor(own_geo_quality)Street Score 30 - 50      11.14 &lt; 2e-16
+## factor(own_geo_quality)Street Score 50 - 80      10.63 &lt; 2e-16
+## factor(own_geo_quality)Street Score 80 - 99       6.43 1.3e-10
+## factor(own_geo_quality)Zip Centroid              10.21 &lt; 2e-16
+## factor(outl_geo_quality)Street Exact              2.42   0.016
+## factor(outl_geo_quality)Street Score 30 - 50     -0.28   0.778
+## factor(outl_geo_quality)Street Score 50 - 80     -0.30   0.766
+## factor(outl_geo_quality)Street Score 80 - 99     -4.12 3.8e-05
+## factor(outl_geo_quality)Zip Centroid              0.19   0.847
+## lgtdistgeo                                     -151.85 &lt; 2e-16
+## Log(scale)                                      224.22 &lt; 2e-16
+## 
+## Scale= 1.17 
+## 
+## Weibull distribution
+## Loglik(model)= -11703225   Loglik(intercept only)= -11779241
+##  Chisq= 152030.9 on 29 degrees of freedom, p= 0 
+## Number of Newton-Raphson Iterations: 5 
+## n= 1713602</code></pre>
+<p>The values reported are the transformed exponeted coeffients, given by:</p>
+<p><span class="math display">\[\tilde{\beta}=exp\left(-\frac{\beta}{\sigma}\right)\]</span></p>
+<p>AS usual we scale the standard errors to the transnformation we just proposed.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit1<span class="op">$</span>coefficients &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>(fit1<span class="op">$</span>coefficients)<span class="op">/</span>(fit1<span class="op">$</span>scale))
+se &lt;-<span class="st"> </span><span class="kw">list</span>()
+se[[<span class="dv">1</span>]] &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">c</span>(fit1<span class="op">$</span>coefficients,<span class="dv">1</span>)<span class="op">^</span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span><span class="kw">diag</span>(fit1<span class="op">$</span>var))
+
+<span class="kw">stargazer</span>(fit1, 
+          <span class="dt">se =</span> se,
+          <span class="dt">type =</span> <span class="st">&quot;text&quot;</span>,
+          <span class="dt">omit =</span> <span class="kw">c</span>(<span class="st">&quot;ototype&quot;</span>,
+                   <span class="st">&quot;yearstart&quot;</span>,
+                   <span class="st">&quot;own_geo_quality&quot;</span>,
+                   <span class="st">&quot;outl_geo_quality&quot;</span>))</code></pre></div>
+<pre><code>## 
+## ==========================================
+##                    Dependent variable:    
+##                ---------------------------
+##                         duration          
+## ------------------------------------------
+## lgtdistgeo              1.090***          
+##                          (0.001)          
+##                                           
+## Constant                0.001***          
+##                         (0.0001)          
+##                                           
+## ------------------------------------------
+## Observations            1,713,602         
+## Log Likelihood       -11,703,225.000      
+## chi2            152,030.900*** (df = 29)  
+## ==========================================
+## Note:          *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
+<p>This coincides with the first column of table 2 of the paper. Now let’s proceed to include the number fo previous stablishments.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">formula2 &lt;-<span class="st"> </span><span class="kw">as.formula</span>(<span class="kw">Surv</span>(duration, rcensored) <span class="op">~</span><span class="st"> </span>
+<span class="st">                               </span><span class="kw">factor</span>(ototype) <span class="op">+</span>
+<span class="st">                               </span><span class="kw">factor</span>(yearstart) <span class="op">+</span>
+<span class="st">                               </span><span class="kw">factor</span>(own_geo_quality) <span class="op">+</span>
+<span class="st">                               </span><span class="kw">factor</span>(outl_geo_quality) <span class="op">+</span>
+<span class="st">                               </span>lgtdistgeo <span class="op">+</span><span class="st"> </span>
+<span class="st">                                </span>lgobf)
+
+fit2 &lt;-<span class="st"> </span><span class="kw">survreg</span>(formula2,
+                <span class="dt">data =</span> data, 
+                <span class="dt">dist =</span> <span class="st">&quot;weibull&quot;</span>, 
+                <span class="dt">control =</span> <span class="kw">list</span>(<span class="dt">maxiter =</span> <span class="dv">60</span>))
+
+
+fit2<span class="op">$</span>coefficients &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>(fit2<span class="op">$</span>coefficients)<span class="op">/</span>(fit2<span class="op">$</span>scale))
+se[[<span class="dv">2</span>]] &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">c</span>(fit2<span class="op">$</span>coefficients,<span class="dv">1</span>)<span class="op">^</span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span><span class="kw">diag</span>(fit2<span class="op">$</span>var))</code></pre></div>
+<p>Then we present the results using <code>stargazer</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stargazer</span>(fit1, fit2, 
+          <span class="dt">se =</span> se,
+          <span class="dt">type =</span> <span class="st">&quot;text&quot;</span>,
+          <span class="dt">omit =</span> <span class="kw">c</span>(<span class="st">&quot;ototype&quot;</span>,
+                   <span class="st">&quot;yearstart&quot;</span>,
+                   <span class="st">&quot;own_geo_quality&quot;</span>,
+                   <span class="st">&quot;outl_geo_quality&quot;</span>))</code></pre></div>
+<pre><code>## 
+## ================================================================
+##                               Dependent variable:               
+##                -------------------------------------------------
+##                                    duration                     
+##                          (1)                      (2)           
+## ----------------------------------------------------------------
+## lgtdistgeo             1.090***                 1.102***        
+##                        (0.001)                  (0.001)         
+##                                                                 
+## lgobf                                           0.864***        
+##                                                 (0.002)         
+##                                                                 
+## Constant               0.001***                 0.002***        
+##                        (0.0001)                 (0.0001)        
+##                                                                 
+## ----------------------------------------------------------------
+## Observations          1,713,602                1,713,602        
+## Log Likelihood     -11,703,225.000          -11,698,282.000     
+## chi2           152,030.900*** (df = 29) 161,916.700*** (df = 30)
+## ================================================================
+## Note:                                *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
+<p>Why we are not reproducing the other columns?</p>
+<p><img src="images/cores.png" width="90%" style="display: block; margin: auto;" /></p>
+</div>
+<div id="references-2" class="section level2">
+<h2><span class="header-section-number">4.4</span> References</h2>
+
+<div id="refs" class="references">
+<div>
+<p>Abrevaya, Jason. 2002. “The Effects of Demographics and Maternal Behavior on the Distribution of Birth Outcomes.” In <em>Economic Applications of Quantile Regression</em>, 247–57. Springer.</p>
+</div>
+<div>
+<p>Bolker, Ben, and R Development Core Team. 2017. <em>Bbmle: Tools for General Maximum Likelihood Estimation</em>. <a href="https://CRAN.R-project.org/package=bbmle" class="uri">https://CRAN.R-project.org/package=bbmle</a>.</p>
+</div>
+<div>
+<p>Dowle, Matt, and Arun Srinivasan. 2019. <em>Data.table: Extension of ‘Data.frame‘</em>. <a href="https://CRAN.R-project.org/package=data.table" class="uri">https://CRAN.R-project.org/package=data.table</a>.</p>
+</div>
+<div>
+<p>Firpo, Sergio, Nicole M Fortin, and Thomas Lemieux. 2009. “Unconditional Quantile Regressions.” <em>Econometrica</em> 77 (3). Wiley Online Library: 953–73.</p>
+</div>
+<div>
+<p>Firpo, Sergio, Nicole Fortin, and Thomas Lemieux. 2018. “Decomposing Wage Distributions Using Recentered Influence Function Regressions.” <em>Econometrics</em> 6 (2). Multidisciplinary Digital Publishing Institute: 28.</p>
+</div>
+<div>
+<p>Flinn, Christopher, and James Heckman. 1982. “New Methods for Analyzing Structural Models of Labor Force Dynamics.” <em>Journal of Econometrics</em> 18 (1). Elsevier: 115–68.</p>
+</div>
+<div>
+<p>Fortna, Virginia Page. 2015. “Do Terrorists Win? Rebels’ Use of Terrorism and Civil War Outcomes.” <em>International Organization</em> 69 (3). Cambridge University Press: 519–56.</p>
+</div>
+<div>
+<p>Hlavac, Marek. 2018. <em>Stargazer: Well-Formatted Regression and Summary Statistics Tables</em>. <a href="https://CRAN.R-project.org/package=stargazer" class="uri">https://CRAN.R-project.org/package=stargazer</a>.</p>
+</div>
+<div>
+<p>Koenker, Roger, and Kevin F Hallock. 2001. “Quantile Regression.” <em>Journal of Economic Perspectives</em> 15 (4): 143–56.</p>
+</div>
+<div>
+<p>Machado, José AF, and José Mata. 2005. “Counterfactual Decomposition of Changes in Wage Distributions Using Quantile Regression.” <em>Journal of Applied Econometrics</em> 20 (4). Wiley Online Library: 445–65.</p>
+</div>
+<div>
+<p>Maechler, Martin. 2019. <em>Rmpfr: R Mpfr - Multiple Precision Floating-Point Reliable</em>. <a href="https://CRAN.R-project.org/package=Rmpfr" class="uri">https://CRAN.R-project.org/package=Rmpfr</a>.</p>
+</div>
+<div>
+<p>Treisman, Daniel. 2016. “Russia’s Billionaires.” <em>American Economic Review</em> 106 (5): 236–41.</p>
+</div>
+<div>
+<p>Wickham, Hadley, and Evan Miller. 2019. <em>Haven: Import and Export ’Spss’, ’Stata’ and ’Sas’ Files</em>. <a href="https://CRAN.R-project.org/package=haven" class="uri">https://CRAN.R-project.org/package=haven</a>.</p>
+</div>
+<div>
+<p>Wickham, Hadley, Winston Chang, Lionel Henry, Thomas Lin Pedersen, Kohske Takahashi, Claus Wilke, Kara Woo, and Hiroaki Yutani. 2019. <em>Ggplot2: Create Elegant Data Visualisations Using the Grammar of Graphics</em>. <a href="https://CRAN.R-project.org/package=ggplot2" class="uri">https://CRAN.R-project.org/package=ggplot2</a>.</p>
+</div>
+<div>
+<p>Wickham, Hadley, Romain François, Lionel Henry, and Kirill Müller. 2018. <em>Dplyr: A Grammar of Data Manipulation</em>. <a href="https://CRAN.R-project.org/package=dplyr" class="uri">https://CRAN.R-project.org/package=dplyr</a>.</p>
+</div>
+<div>
+<p>Wickham, Hadley, Jim Hester, and Romain Francois. 2017. <em>Readr: Read Rectangular Text Data</em>. <a href="https://CRAN.R-project.org/package=readr" class="uri">https://CRAN.R-project.org/package=readr</a>.</p>
+</div>
+</div>
+</div>
+</div>
+
+<br>
+<div class = rmdreview>
+This book is in <b><a href="open.html#open">Open Review</a></b>. I want your feedback to make the book better for you and other readers. To add your annotation, <span style="background-color: #3297FD; color: white">select some text</span> and then click the <i class="h-icon-annotate"></i> on the pop-up menu. To see the annotations of others, click the <i class="h-icon-chevron-left"></i> in the upper right hand corner of the page <i class="fa fa-arrow-circle-right  fa-rotate-315" aria-hidden="true"></i>
+</div>
+<br>
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="session-ii-maximum-likelihood-estimation-mle.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"download": ["Material.pdf", "Material.epub"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>
